@@ -34,3 +34,14 @@ vignettes/*.pdf
 
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
+
+#########################
+# Un-ignore directories #
+#########################
+!/code/R
+!/data/
+!/docs/
+!/models/
+!/dashboard/
+!.gitignore
+!*.Rproj

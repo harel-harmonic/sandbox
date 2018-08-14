@@ -16,3 +16,5 @@ source(file.path(k_path_project, "code", "scripts", "setup.R"))
 #######
 # ??? #
 #######
+# Import flu datasets
+messy_datasets <- import_flu_datasets()

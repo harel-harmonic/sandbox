@@ -4,7 +4,8 @@
 #' Clear the environment
 # rm(list = ls()) # remove all variables from global environment
 cat("\014") # clear the screen
-message("#########\n# SETUP #\n#########")
+message("---")
+message("Setup")
 #' Validate that the project path exists
 stopifnot(exists("k_path_project"))
 #'
