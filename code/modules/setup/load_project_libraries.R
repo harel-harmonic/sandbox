@@ -33,7 +33,7 @@ load_project_libraries <- function() {
   #' CRAN Packages
   libraries_on_CRAN <- c(
     # Essential packages
-    "devtools",
+    "devtools", "assertive",
     # Data Manipulation
     "tidyverse", "lubridate", "forcats", "magrittr",
     # Graphic Displays
