@@ -23,7 +23,7 @@ tidy_flu_datasets <-function(flu_datasets){
         #       specific time
         flu_long_dataset <- 
             flu_dataset %>% 
-            gather(key = "Location", value = "Index", -Date) %>%
+            tidyr::gather(key = "Location", value = "Index", -Date) %>%
             add_column(Country = flu_country) %>%
             select(Date, Country, Location, Index)
         
