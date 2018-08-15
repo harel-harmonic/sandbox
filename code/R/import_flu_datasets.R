@@ -3,6 +3,8 @@
 import_flu_datasets <- function(){
     message("---")
     message("Importing flu datasets")
+    
+    # Input validation
     assert_all_are_existing("k_path_data_raw")
     
     # Get all raw CSV files full paths 
