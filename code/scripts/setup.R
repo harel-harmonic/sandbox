@@ -37,9 +37,12 @@ message("-> ", "Loading project's libraries")
 load_project_libraries()
 #'
 #' Performs various substitutions in all .R files
-# message(paste0(rep("#",80), collapse=""), "\n# Prettifying the project's code\n", paste0(rep("#",80), collapse=""))
-# styler::style_dir(k_path_project,
-#                   exclude_files = file.path(k_path_project, "code", "data-pipeline.R"))
+#' message("-> ", "Prettifying the project's code")
+# styler::style_dir(
+#     k_path_project,
+#     transformers = styler::tidyverse_style(indent_by = 4),
+#     exclude_files = file.path(k_path_project, "code", "scripts", "setup.R")
+# )
 #'
 #' Generate session ID
 UID <- stringi::stri_rand_strings(n = 1, length = 20)

@@ -3,10 +3,10 @@
 ################################################################################
 #' GitHub webpage
 #' <https://ropensci.github.io/drake/>
-#' 
+#'
 #' The drake R Package User Manual
 #' <https://ropenscilabs.github.io/drake-manual/index.html#the-drake-r-package>
-#' 
+#'
 #####################
 # Inputs validation #
 #####################
@@ -40,10 +40,11 @@ local_rolling_sample <- get_regional_data_rolling_sample(data, location)
 local_models <- fit_regional_flu_models(roll_rs = local_rolling_sample)
 
 # Predict regional flu index
-local_predictions_list <- 
-    predict_regional_flu_models(roll_rs = local_rolling_sample,
-                                roll_mdls = local_models)
+local_predictions_list <-
+    predict_regional_flu_models(
+        roll_rs = local_rolling_sample,
+        roll_mdls = local_models
+    )
 
 # Bind Splits
 local_predictions_df <- bind_lists(data = local_predictions_list)
-
