@@ -134,9 +134,9 @@ summary_types <- drake_plan(
 # summaries() also uses evaluate(): once with expand = TRUE,
 #   once with expand = FALSE
 results <- plan_summaries(
-  summary_types,
-  my_analyses,
-  my_datasets,
+  plan = summary_types,
+  analyses = my_analyses,
+  datasets = my_datasets,
   gather = NULL
 ) # skip 'gather' (workflow my_plan is more readable)
 

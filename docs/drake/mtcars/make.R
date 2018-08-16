@@ -1,16 +1,19 @@
-# Run the code in each of the other R scripts in the R folder
-# You don't need interactive-tutorial.R, which is independent and separate.
-
-source("R/packages.R")  # Load all the packages you need.
-source("R/functions.R") # Load all the functions into your environment.
-source("R/plan.R")      # Build your workflow plan data frame.
-
-# Now, your functions and workflow plan should be in your environment.
-ls()
-
+################################################################################
+#                                    mtcars                                    #
+################################################################################
+#'
+#####################
+# Inputs validation #
+#####################
+k_path_project <<- rprojroot::find_rstudio_root_file()
+source(file.path(k_path_project, "code", "scripts", "setup.R"))
+pkgconfig::set_config("drake::strings_in_dots" = "literals")
+k_path_drake_mtcars <<- file.path(k_path_documents, "drake", "mtcars")
+source(file.path(k_path_drake_mtcars, "plan.R"))
+#'
 # Optionally plot the graph of your workflow.
-# config <- drake_config(my_plan) # nolint
-# vis_drake_graph(config)         # nolint
+config <- drake_config(my_plan) # nolint
+vis_drake_graph(config)         # nolint
 
 # Now it is time to actually run your project.
 make(my_plan) # Or make(my_plan, jobs = 2), etc.

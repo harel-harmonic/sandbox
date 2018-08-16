@@ -33,7 +33,9 @@ load_project_libraries <- function() {
     #' CRAN Packages
     libraries_on_CRAN <- c(
         # Essential packages
-        "devtools", "assertive", "drake",
+        "devtools", "assertive", 
+        # drake and its dependecncies
+        "drake", "downloader", "visNetwork", 
         # Data Manipulation
         "tidyverse", "lubridate", "forcats", "magrittr",
         # Graphic Displays
