@@ -11,10 +11,10 @@ n <- 4
 library(drake)
 library(magrittr)
 plan <- drake_plan(target_1 = 1)
-for (i in seq_len(n - 1) + 1){
-  target <- paste0("target_", i)
-  dependencies <- paste0("target_", seq_len(i - 1))
-  command <- paste0("max(", paste0(dependencies, collapse = ", "), ")")
-  plan <- rbind(plan, data.frame(target = target, command = command))
+for (i in seq_len(n - 1) + 1) {
+    target <- paste0("target_", i)
+    dependencies <- paste0("target_", seq_len(i - 1))
+    command <- paste0("max(", paste0(dependencies, collapse = ", "), ")")
+    plan <- rbind(plan, data.frame(target = target, command = command))
 }
 make(plan, verbose = 4)
