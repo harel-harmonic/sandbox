@@ -33,9 +33,7 @@ load_project_libraries <- function() {
     #' CRAN Packages
     libraries_on_CRAN <- c(
         # Essential packages
-        "devtools", "assertive", 
-        # drake and its dependecncies
-        "drake", "downloader", "visNetwork", 
+        "devtools", "assertive",
         # Data Manipulation
         "tidyverse", "lubridate", "forcats", "magrittr",
         # Graphic Displays
@@ -56,14 +54,17 @@ load_project_libraries <- function() {
         # Parallel Computation Tools
         "foreach", "parallel", "doParallel",
         # Misc
-        # (1) Conflict packages resolution strategy; filter <- dplyr::filter
-        "conflicted",
-        # (2) Non-invasive pretty printing of R code
+        # (1) Non-invasive pretty printing of R code
         "styler",
-        # (3) Perform a computation in a separate R process
+        # (2) Perform a computation in a separate R process
         "callr",
-        # (4) A cross-platform interface to file system operations
-        "fs"
+        # (3) A cross-platform interface to file system operations
+        "fs",
+        # Sandbox
+        # (1) drake and its dependecncies
+        "drake", "downloader", "visNetwork",
+        # (2) R interface for Apache Spark
+        "sparklyr"
     )
     #' GitHub Packages
     libraries_on_GitHub <- c(
@@ -90,6 +91,7 @@ load_project_libraries <- function() {
     )
     pacman::p_load(char = libraries_on_CRAN, install = TRUE, update = FALSE)
     pacman::p_load_gh(char = libraries_on_GitHub, install = TRUE, update = FALSE)
+    pacman::p_load(char = "conflicted", install = TRUE, update = FALSE)
     #'
     ##########
     # Return #
