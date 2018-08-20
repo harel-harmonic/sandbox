@@ -45,4 +45,8 @@ rsconnect/
 !/dashboard/
 !.gitignore
 !*.Rproj
-logs/log4j.spark.log
+
+######################
+# Ignore directories #
+######################
+logs/
