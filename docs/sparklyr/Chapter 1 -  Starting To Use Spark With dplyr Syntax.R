@@ -71,3 +71,7 @@ print(object.size(uk_elec_dem), units = "Kb")
 # Disconnect from Spark
 spark_disconnect(spark_conn)
 #'
+#############################
+# 1.4 ? #
+#############################
+# https://campus.datacamp.com/courses/introduction-to-spark-in-r-using-sparklyr/light-my-fire-starting-to-use-spark-with-dplyr-syntax?ex=7
