@@ -4,8 +4,8 @@ assert_all_are_existing("k_path_drake_mtcars", globalenv())
 
 # We write drake commands to generate our two bootstrapped datasets.
 my_datasets <- drake_plan(
-  small = simulate(48),
-  large = simulate(64)
+    small = simulate(48),
+    large = simulate(64)
 )
 
 # Optionally, get replicates with expand_plan(my_datasets,
@@ -18,13 +18,13 @@ my_datasets <- drake_plan(
 # These new commands will apply our regression models
 # to each of the datasets in turn.
 methods <- drake_plan(
-  linear_regression = reg1(dataset__),
-  quadratic_regression = reg2(dataset__)
+    linear_regression = reg1(dataset__),
+    quadratic_regression = reg2(dataset__)
 )
 
 # Here, we use the template to expand the `methods` template
 # over the datasets we will analyze.
-# Same as 
+# Same as
 # evaluate(methods,
 #          wildcard = "..dataset..",
 #          values = my_datasets$target)
@@ -36,8 +36,8 @@ my_analyses <- plan_analyses(methods, datasets = my_datasets)
 # Again, this is a template. Later we will expand it over the
 # available regression models.
 summary_types <- drake_plan(
-  summ = suppressWarnings(summary(analysis__$residuals)), # Summarize the RESIDUALS of the model fit. # nolint
-  coef = suppressWarnings(summary(analysis__))$coefficients # Coefficinents with p-values # nolint
+    summ = suppressWarnings(summary(analysis__$residuals)), # Summarize the RESIDUALS of the model fit. # nolint
+    coef = suppressWarnings(summary(analysis__))$coefficients # Coefficinents with p-values # nolint
 )
 
 # Here, we expand the commands to summarize each analysis in turn.
@@ -57,9 +57,10 @@ results <- plan_summaries(
 # Drake knows to put report.md in the "target" column when it comes
 # time to make().
 report <- drake_plan(
-  report = knit(knitr_in(file.path(k_path_drake_mtcars, "report.Rmd")),
-                file_out(file.path(k_path_drake_mtcars, "report.md")),
-                quiet = TRUE)
+    report = knit(knitr_in(file.path(k_path_drake_mtcars, "report.Rmd")),
+        file_out(file.path(k_path_drake_mtcars, "report.md")),
+        quiet = TRUE
+    )
 )
 
 # Row order doesn't matter in the workflow my_plan.
@@ -67,8 +68,9 @@ my_plan <- rbind(
     # generate two bootstrapped datasets
     my_datasets,
     # Fit regression models
-    
+
     # report,
-                 my_datasets,
-                 my_analyses,
-                 results)
+    my_datasets,
+    my_analyses,
+    results
+)

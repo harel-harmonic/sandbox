@@ -55,33 +55,33 @@ pkgconfig::set_config("drake::strings_in_dots" = "literals")
 clean() # remove any previous drake output
 
 # Pick a random subset of n rows from a dataset
-random_rows <- function(data, n){
-  data[sample.int(n = nrow(data), size = n, replace = TRUE), ]
+random_rows <- function(data, n) {
+    data[sample.int(n = nrow(data), size = n, replace = TRUE), ]
 }
 
 # Bootstrapped datasets from mtcars.
-simulate <- function(n){
-  # Pick a random set of cars to bootstrap from the mtcars data.
-  data <- random_rows(data = mtcars, n = n)
+simulate <- function(n) {
+    # Pick a random set of cars to bootstrap from the mtcars data.
+    data <- random_rows(data = mtcars, n = n)
 
-  # x is the car's weight, and y is the fuel efficiency.
-  data.frame(
-    x = data$wt,
-    y = data$mpg
-  )
+    # x is the car's weight, and y is the fuel efficiency.
+    data.frame(
+        x = data$wt,
+        y = data$mpg
+    )
 }
 
 # Try a couple different regression models.
 
 # Is fuel efficiency linearly related to weight?
-reg1 <- function(d){
-  lm(y ~ + x, data = d)
+reg1 <- function(d) {
+    lm(y ~ +x, data = d)
 }
 
 # Is fuel efficiency related to the SQUARE of the weight?
-reg2 <- function(d){
-  d$x2 <- d$x ^ 2
-  lm(y ~ x2, data = d)
+reg2 <- function(d) {
+    d$x2 <- d$x^2
+    lm(y ~ x2, data = d)
 }
 
 # At this point, please verify that a dynamic report
@@ -96,8 +96,8 @@ reg2 <- function(d){
 
 # We write drake commands to generate our two bootstrapped datasets.
 my_datasets <- drake_plan(
-  small = simulate(48),
-  large = simulate(64)
+    small = simulate(48),
+    large = simulate(64)
 )
 
 # Optionally, get replicates with expand_plan(my_datasets,
@@ -110,8 +110,8 @@ my_datasets <- drake_plan(
 # These new commands will apply our regression models
 # to each of the datasets in turn.
 methods <- drake_plan(
-  regression1 = reg1(dataset__),
-  regression2 = reg2(dataset__)
+    regression1 = reg1(dataset__),
+    regression2 = reg2(dataset__)
 )
 
 # Here, we use the template to expand the `methods` template
@@ -126,18 +126,18 @@ my_analyses <- plan_analyses(methods, datasets = my_datasets)
 # Again, this is a template. Later we will expand it over the
 # available regression models.
 summary_types <- drake_plan(
-  summ = suppressWarnings(summary(analysis__$residuals)), # Summarize the RESIDUALS of the model fit. # nolint
-  coef = suppressWarnings(summary(analysis__))$coefficients # Coefficinents with p-values # nolint
+    summ = suppressWarnings(summary(analysis__$residuals)), # Summarize the RESIDUALS of the model fit. # nolint
+    coef = suppressWarnings(summary(analysis__))$coefficients # Coefficinents with p-values # nolint
 )
 
 # Here, we expand the commands to summarize each analysis in turn.
 # summaries() also uses evaluate(): once with expand = TRUE,
 #   once with expand = FALSE
 results <- plan_summaries(
-  plan = summary_types,
-  analyses = my_analyses,
-  datasets = my_datasets,
-  gather = NULL
+    plan = summary_types,
+    analyses = my_analyses,
+    datasets = my_datasets,
+    gather = NULL
 ) # skip 'gather' (workflow my_plan is more readable)
 
 # Use `knitr_in()` to tell drake to look for dependencies
@@ -147,7 +147,7 @@ results <- plan_summaries(
 # Drake knows to put report.md in the "target" column when it comes
 # time to make().
 report <- drake_plan(
-  report = knit(knitr_in("report.Rmd"), file_out("report.md"), quiet = TRUE)
+    report = knit(knitr_in("report.Rmd"), file_out("report.md"), quiet = TRUE)
 )
 
 # Row order doesn't matter in the workflow my_plan.
@@ -163,16 +163,16 @@ my_plan <- rbind(report, my_datasets, my_analyses, results)
 my_variable <- 5
 
 drake_plan(
-  a = !!my_variable,
-  b = !!my_variable + 1,
-  list = c(d = "!!my_variable")
+    a = !!my_variable,
+    b = !!my_variable + 1,
+    list = c(d = "!!my_variable")
 )
 
 drake_plan(
-  a = !!my_variable,
-  b = !!my_variable + 1,
-  list = c(d = "!!my_variable"),
-  tidy_evaluation = FALSE
+    a = !!my_variable,
+    b = !!my_variable + 1,
+    list = c(d = "!!my_variable"),
+    tidy_evaluation = FALSE
 )
 
 # For instances of !! that remain in the workflow plan,
@@ -231,9 +231,9 @@ config <- make(my_plan)
 
 # What if we want to explore a cubic term?
 # What if we want to know if fuel efficiency is associated with weight cubed?
-reg2 <- function(d){
-  d$x3 <- d$x ^ 3
-  lm(y ~ x3, data = d)
+reg2 <- function(d) {
+    d$x3 <- d$x^3
+    lm(y ~ x3, data = d)
 }
 outdated(config) # The targets depending on reg2() are now out of date...
 # vis_drake_graph(config) # ...which is indicated in the graph. #nolint: optional
@@ -242,8 +242,8 @@ make(my_plan) # Drake only runs targets that depend on reg2().
 
 # For functions and my_plan$command,
 # trivial changes like comments and whitespace are ignored.
-reg2 <- function(d){
-  d$x3 <- d$x ^ 3
+reg2 <- function(d) {
+    d$x3 <- d$x^3
     lm(y ~ x3, data = d) # I indented here.
 }
 outdated(config) # Everything is still up to date.
@@ -252,9 +252,9 @@ outdated(config) # Everything is still up to date.
 # nontrivial changes to `random_rows()` will propagate to `simulate()`
 # and all the downstream targets.
 
-random_rows <- function(data, n){
-  n <- n + 1
-  data[sample.int(n = nrow(data), size = n, replace = TRUE), ]
+random_rows <- function(data, n) {
+    n <- n + 1
+    data[sample.int(n = nrow(data), size = n, replace = TRUE), ]
 }
 outdated(config)
 make(my_plan)
@@ -268,14 +268,14 @@ make(my_plan)
 # In other words, what would our methods discover if
 # there were really no true relationship between weight and fuel efficiency?
 # Our methods should detect no relationship.
-new_simulation <- function(n){
-  data.frame(x = rnorm(n), y = rnorm(n))
+new_simulation <- function(n) {
+    data.frame(x = rnorm(n), y = rnorm(n))
 }
 
 # Any R expression can be a command
 # except for formulas and function definitions.
 additions <- drake_plan(
-  new_data = new_simulation(36) + sqrt(10)
+    new_data = new_simulation(36) + sqrt(10)
 )
 
 # Add the new work
@@ -326,16 +326,16 @@ future::plan(multisession) # Use separate background R sessions.
 make(my_plan, parallelism = "future_lapply")
 clean()
 
-if (require(future.batchtools)){ # More heavy-duty future-style parallel backends # nolint
-  future::plan(batchtools_local)
-  make(my_plan, parallelism = "future_lapply")
-  clean()
+if (require(future.batchtools)) { # More heavy-duty future-style parallel backends # nolint
+    future::plan(batchtools_local)
+    make(my_plan, parallelism = "future_lapply")
+    clean()
 
-  # Deploy targets with batchtools_local and use `future`-style
-  # multicore parallism each individual target's command.
-  future::plan(list(batchtools_local, multicore))
-  make(my_plan, parallelism = "future_lapply")
-  clean()
+    # Deploy targets with batchtools_local and use `future`-style
+    # multicore parallism each individual target's command.
+    future::plan(list(batchtools_local, multicore))
+    make(my_plan, parallelism = "future_lapply")
+    clean()
 }
 clean() # Start over next time
 
@@ -361,42 +361,44 @@ clean() # Start over next time.
 ######################################################
 
 # Use FALSE on regular local machines.
-if (FALSE){
-# if (TRUE){ # Only attempt this part on a proper computing cluster.
+if (FALSE) {
+    # if (TRUE){ # Only attempt this part on a proper computing cluster.
 
-  # The file shell.sh tells the Makefile to submit jobs on a cluster.
-  # You could write this file by hand if you want, or you can
-  # generate a starter file with drake::shell_file().
-  # You may have to change 'module load R' to a command that
-  # loads a specific version of R.
-  # Writes an example shell.sh and does a `chmod +x` so drake can execute it.
+    # The file shell.sh tells the Makefile to submit jobs on a cluster.
+    # You could write this file by hand if you want, or you can
+    # generate a starter file with drake::shell_file().
+    # You may have to change 'module load R' to a command that
+    # loads a specific version of R.
+    # Writes an example shell.sh and does a `chmod +x` so drake can execute it.
 
-  shell_file()
+    shell_file()
 
-  # In reality, you would put all your code in an R script
-  # and then run it in the Linux/Mac terminal with
-  # nohup nice -19 R CMD BATCH my_script.R &
+    # In reality, you would put all your code in an R script
+    # and then run it in the Linux/Mac terminal with
+    # nohup nice -19 R CMD BATCH my_script.R &
 
-  # Run up to four parallel jobs on the cluster or supercomputer,
-  # depending on what is needed. These jobs could go to multiple
-  # nodes for true distributed computing.
-  make(my_plan, parallelism = "Makefile", jobs = 4, # build
-    prepend = "SHELL=./shell.sh") # Generate shell.sh with shell_file().
+    # Run up to four parallel jobs on the cluster or supercomputer,
+    # depending on what is needed. These jobs could go to multiple
+    # nodes for true distributed computing.
+    make(my_plan,
+        parallelism = "Makefile", jobs = 4, # build
+        prepend = "SHELL=./shell.sh"
+    ) # Generate shell.sh with shell_file().
 
-  # Alternatively, users of SLURM (https://slurm.schedmd.com/)
-  # can just point to `srun` and dispense with `shell.sh` altogether.
-  # make(my_plan, parallelism = "Makefile", jobs = 4,
-  #   prepend = "SHELL=srun")
+    # Alternatively, users of SLURM (https://slurm.schedmd.com/)
+    # can just point to `srun` and dispense with `shell.sh` altogether.
+    # make(my_plan, parallelism = "Makefile", jobs = 4,
+    #   prepend = "SHELL=srun")
 
-  readd(coef_regression2_large) # see also: loadd(), cached()
+    readd(coef_regression2_large) # see also: loadd(), cached()
 
-  # Everything is up to date, so no jobs should be submitted.
-  make(
-    my_plan,
-    parallelism = "Makefile",
-    jobs = 4,
-    prepend = "SHELL=./shell.sh"
-  )
+    # Everything is up to date, so no jobs should be submitted.
+    make(
+        my_plan,
+        parallelism = "Makefile",
+        jobs = 4,
+        prepend = "SHELL=./shell.sh"
+    )
 } # if(FALSE)
 
 ###########################
@@ -405,11 +407,11 @@ if (FALSE){
 
 clean(destroy = TRUE) # Totally remove the hidden .drake/ cache.
 unlink(
-  c(
-    ".future",
-    "Makefile",
-    "shell.sh",
-    "STDIN.o*"
-  ),
-  recursive = TRUE
+    c(
+        ".future",
+        "Makefile",
+        "shell.sh",
+        "STDIN.o*"
+    ),
+    recursive = TRUE
 ) # Clean up other files.

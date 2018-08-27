@@ -1,9 +1,9 @@
 # Run the code in each of the other R scripts in the R folder
 # You don't need interactive-tutorial.R, which is independent and separate.
 
-source("R/packages.R")  # Load all the packages you need.
+source("R/packages.R") # Load all the packages you need.
 source("R/functions.R") # Load all the functions into your environment.
-source("R/plan.R")      # Build your workflow plan data frame.
+source("R/plan.R") # Build your workflow plan data frame.
 
 # Now, your functions and workflow plan should be in your environment.
 ls()

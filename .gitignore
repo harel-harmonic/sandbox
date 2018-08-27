@@ -45,3 +45,8 @@ rsconnect/
 !/dashboard/
 !.gitignore
 !*.Rproj
+
+######################
+# Ignore directories #
+######################
+logs/

@@ -13,7 +13,7 @@ source(file.path(k_path_drake_mtcars, "plan.R"))
 #'
 # Optionally plot the graph of your workflow.
 config <- drake_config(my_plan) # nolint
-vis_drake_graph(config)         # nolint
+vis_drake_graph(config) # nolint
 
 # Now it is time to actually run your project.
 make(my_plan) # Or make(my_plan, jobs = 2), etc.

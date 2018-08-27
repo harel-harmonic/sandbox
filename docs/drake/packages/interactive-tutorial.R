@@ -45,9 +45,9 @@ pkgconfig::set_config("drake::strings_in_dots" = "literals")
 # We want to explore the daily downloads from these packages.
 
 package_list <- c(
-  "knitr",
-  "Rcpp",
-  "ggplot2"
+    "knitr",
+    "Rcpp",
+    "ggplot2"
 )
 
 # We will use the cranlogs package to get the data.
@@ -59,50 +59,50 @@ package_list <- c(
 # when a new CRAN log becomes available.
 
 data_plan <- drake_plan(
-  older = cran_downloads(
-    packages = package_list,
-    from = "2016-11-01",
-    to = "2016-12-01"
-  ),
-  recent = target(
-    command = cran_downloads(
-      packages = package_list,
-      when = "last-month"
+    older = cran_downloads(
+        packages = package_list,
+        from = "2016-11-01",
+        to = "2016-12-01"
     ),
-    trigger = trigger(change = latest_log_date())
-  )
+    recent = target(
+        command = cran_downloads(
+            packages = package_list,
+            when = "last-month"
+        ),
+        trigger = trigger(change = latest_log_date())
+    )
 )
 
 # To find out the latest log date,
 # we scrape the web with the rvest package.
 
-latest_log_date <- function(){
-  read_html("http://cran-logs.rstudio.com/") %>%
-    html_nodes("li:last-of-type") %>%
-    html_nodes("a:last-of-type") %>%
-    html_text() %>%
-    max
+latest_log_date <- function() {
+    read_html("http://cran-logs.rstudio.com/") %>%
+        html_nodes("li:last-of-type") %>%
+        html_nodes("a:last-of-type") %>%
+        html_text() %>%
+        max()
 }
 
 # We want to summarize each set of
 # download statistics a couple different ways.
 
 output_types <- drake_plan(
-  averages = make_my_table(dataset__),
-  plot = make_my_plot(dataset__)
+    averages = make_my_table(dataset__),
+    plot = make_my_plot(dataset__)
 )
 
 # We need to define functions to summarize
 # and plot the data.
 
-make_my_table <- function(downloads){
-  group_by(downloads, package) %>%
-    summarize(mean_downloads = mean(count))
+make_my_table <- function(downloads) {
+    group_by(downloads, package) %>%
+        summarize(mean_downloads = mean(count))
 }
 
-make_my_plot <- function(downloads){
-  ggplot(downloads) +
-    geom_line(aes(x = date, y = count, group = package, color = package))
+make_my_plot <- function(downloads) {
+    ggplot(downloads) +
+        geom_line(aes(x = date, y = count, group = package, color = package))
 }
 
 # Below, the targets `recent` and `older`
@@ -110,15 +110,15 @@ make_my_plot <- function(downloads){
 # Thus, `output_plan` has four rows.
 
 output_plan <- plan_analyses(
-  plan = output_types,
-  datasets = data_plan
+    plan = output_types,
+    datasets = data_plan
 )
 
 # We plan to weave the results together
 # in a dynamic knitr report.
 
 report_plan <- drake_plan(
-  report = knit(knitr_in("report.Rmd"), file_out("report.md"), quiet = TRUE)
+    report = knit(knitr_in("report.Rmd"), file_out("report.md"), quiet = TRUE)
 )
 
 # And we complete the workflow plan data frame by
@@ -127,9 +127,9 @@ report_plan <- drake_plan(
 # so row order does not matter.
 
 whole_plan <- dplyr::bind_rows(
-  data_plan,
-  output_plan,
-  report_plan
+    data_plan,
+    output_plan,
+    report_plan
 )
 
 # Now, we run the project to download the data and analyze it.
