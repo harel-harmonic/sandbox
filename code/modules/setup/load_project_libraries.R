@@ -64,7 +64,10 @@ load_project_libraries <- function() {
         # (1) drake and its dependecncies
         "drake", "downloader", "visNetwork",
         # (2) R interface for Apache Spark
-        "sparklyr"
+        "sparklyr",
+        # (3) A 'data.frame' processor/conditioner that prepares real-world data
+        #     for predictive modeling in a statistically sound manner.
+        "vtreat"
     )
     #' GitHub Packages
     libraries_on_GitHub <- c(

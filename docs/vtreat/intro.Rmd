@@ -1,0 +1,101 @@
+---
+title: "`vtreat` Notebook"
+author: ""
+date: "29 August 2018"
+output: 
+  html_notebook: 
+    df_print: kable
+    code_folding: hide
+    highlight: tango
+    theme: journal
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+#######################
+# Global Code Options #
+#######################
+knitr::opts_chunk$set(echo = TRUE, results = 'hide', tidy = TRUE,
+                      cache = FALSE, prompt = FALSE,
+                      comment = NA, message = FALSE, warning = FALSE)
+#'
+########################################
+# Load Project Libraries and Functions #
+########################################
+k_path_project <<- rprojroot::find_rstudio_root_file()
+source(file.path(k_path_project, "code", "scripts", "setup.R"))
+```
+
+## Principles of data preparation for predictive modeling
+
+1. Handling missing and bad values in data
+    * Detect and convert invalid categoric or numeric values to NA
+        * Identifying bad values often requires domain knowledge of the
+          plausible values of the variables
+    * Values are missing **randomly** vs. values are missing **systematically**
+2. Missing values in categorical variables
+3. Novel categorical levels and indicators
+    * Novel levels are represented as "no level", OR
+    * Novel levels are weighted proportional to known levels, OR
+    * Novel levels are treated as uncertainty among rare levels
+4. High-cardinality categorical variables
+    * The many possible values are **Look-up codes** and replaced with 
+      information of intrest from another table, OR
+    * The many possible values are converted into **effects coding**
+    
+Often 
+
+
+### Impact or effects coding
+
+First,we build our example data.
+
+```{r, out.width = "100%", dpi = 200, fig.height = 8}
+# Create a process where the input variable is a “zip code” that takes one of 25
+# possible values
+Nz <- 25 
+zip <- paste0('z', format(1:Nz, justify="right")) 
+zip <- gsub(' ', '0', zip, fixed=TRUE) 
+zipval <- 1:Nz; names(zipval) <- zip 
+# The first 3 zip codes account for 80% of the data
+n <- 3
+m <- Nz - n 
+p <- c(numeric(n) + (0.8/n), numeric(m) + 0.2/m)
+# Generate a zipcode sample 
+N <- 1000 
+set.seed(235)
+zipvar <- sample(zip, N, replace = TRUE, prob = p)
+# Generate a normal r.v. with signal (zip code) + noise 
+signal <- zipval[zipvar] + rnorm(N)
+# Store zipcode and signal in a data frame 
+d <- data.frame(zip=zipvar, y=signal + rnorm(N))
+# Plot
+par(mfrow=c(2,1))
+boxplot(y ~ zip, d, 
+        main = "Signal box plot per zipcode")
+barplot(d$zip %>% table() %>% cumsum(), 
+        main = "Cumulative zipcode prevalence plot")
+abline(h=0.8*N)
+par(mfrow=c(1,1))
+```
+
+Second, we use `vtreat` to create a treatment plan to impact-code the zip code
+variable
+
+```{r, results='show'}
+treatplan <- designTreatmentsN(d, varlist="zip", outcome="y", verbose=FALSE)
+scoreFrame <- treatplan$scoreFrame
+scoreFrame[, c('varName', 'sig', 'extraModelDegrees', 'origName', 'code')]
+```
+
+* The *lev* variables are indicator variables that were created for the more
+  prevalent levels
+* All the levels are impact-coded into the variable zip_catN.
+
+```{r, results='show'}
+vars <- scoreFrame$varName[!(scoreFrame$code %in% c("catP", "catD"))]
+dtreated <- vtreat::prepare(treatplan, d, pruneSig=NULL, varRestriction=vars)
+head(d) # Before
+head(dtreated %>% add_column(y_mean = treatplan$meanY, .before = 1)) # After
+```
+
