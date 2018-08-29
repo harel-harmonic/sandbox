@@ -26,6 +26,9 @@ load_project_libraries <- function() {
     # Setup #
     #########
     Sys.setlocale("LC_TIME", "English")
+    try(base::detach("package:conflicted",
+                     unload = TRUE, character.only = TRUE),
+        silent = TRUE)
     #'
     #############################
     # Define project's packages #
@@ -46,9 +49,8 @@ load_project_libraries <- function() {
         # underlying design philosophy, grammar, and data structures of the
         # tidyverse.
         "tidymodels",
-        # 1. A set of tools for datasets and plots archiving
-        # 2. Descriptive mAchine Learning EXplanation
-        "archivist", "DALEX",
+        # Tools for Storing, Restoring and Searching for R Objects
+        # "archivist",
         # Machine Learning
         "mlr", "xgboost", "caret", "gbm", "prophet", "randomForest",
         # Parallel Computation Tools
@@ -67,7 +69,12 @@ load_project_libraries <- function() {
         "sparklyr",
         # (3) A 'data.frame' processor/conditioner that prepares real-world data
         #     for predictive modeling in a statistically sound manner.
-        "vtreat"
+        "vtreat",
+        # (4) Interpretable Machine Learning
+        # (4.1) Descriptive mAchine Learning EXplanation
+        "DALEX",
+        # (4.2) Local Interpretable Model-Agnostic Explanations
+        "lime"
     )
     #' GitHub Packages
     libraries_on_GitHub <- c(
