@@ -26,6 +26,12 @@ k_path_project <<- rprojroot::find_rstudio_root_file()
 source(file.path(k_path_project, "code", "scripts", "setup.R"))
 ```
 
+```{r get_titanic_data}
+input_folder <- file.path(k_path_data_raw, "titanic")
+train_raw <- read_csv(file.path(input_folder, "titanic_train.csv"))
+test_raw <- read_csv(file.path(input_folder, "titanic_test.csv"))
+```
+
 ## R Markdown
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
