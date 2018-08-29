@@ -24,5 +24,5 @@ get_titanic_raw_data <- function(){
     ##########
     # Return #
     ##########
-    return(titanic_raw)
+    return(titanic_raw %>% as.data.frame())
 }

@@ -27,9 +27,7 @@ source(file.path(k_path_project, "code", "scripts", "setup.R"))
 ```
 
 ```{r get_titanic_data}
-input_folder <- file.path(k_path_data_raw, "titanic")
-train_raw <- read_csv(file.path(input_folder, "titanic_train.csv"))
-test_raw <- read_csv(file.path(input_folder, "titanic_test.csv"))
+titanic_raw <- get_titanic_raw_data()
 ```
 
 ## R Markdown
