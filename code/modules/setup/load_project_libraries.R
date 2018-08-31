@@ -49,9 +49,8 @@ load_project_libraries <- function() {
         # underlying design philosophy, grammar, and data structures of the
         # tidyverse.
         "tidymodels",
-        # 1. A set of tools for datasets and plots archiving
-        # 2. Descriptive mAchine Learning EXplanation
-        "archivist", "DALEX",
+        # Tools for Storing, Restoring and Searching for R Objects
+        # "archivist",
         # Machine Learning
         "mlr", "xgboost", "caret", "gbm", "prophet", "randomForest",
         # Parallel Computation Tools
