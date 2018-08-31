@@ -60,36 +60,44 @@ dummy_data <- data.frame(
     hour_id = rep(1:block_quantity, each = block_size),
     value = -n:-1
 )
-dummy_data <- dummy_data[1:(n - 3), ]
+# dummy_data <- dummy_data[1:(n - 3), ]
 head(dummy_data)
 #'
 ###################
 # Sample the data #
 ###################
 set.seed(1135)
-rset <- bootstraps_moving_block(
+rset_1 <- bootstraps_moving_block(
     data = dummy_data,
     times = times,
     block_size = block_size,
     first_split_real_data = TRUE
 )
 #'
-###########################
+set.seed(1135)
+rset_2 <- bootstraps_non_moving_block(
+    data = dummy_data,
+    times = times,
+    block_size = block_size,
+    first_split_real_data = TRUE
+)
+#'
+##########################
 # Explore the rset object #
 ###########################
-rset$splits[[1]] %>% names()
-rset$splits[[1]]$data
+rset_1$splits[[1]] %>% names()
+rset_1$splits[[1]]$data
 # ----------------------- #
-# in_id
+# moving blocks in_id
 # ----------------------- #
-rset$splits[[1]]$in_id
-rset$splits[[2]]$in_id
+rset_1$splits[[1]]$in_id
+rset_1$splits[[2]]$in_id
 # ...
-rset$splits[[times]]$in_id
+rset_1$splits[[times]]$in_id
 # ----------------------- #
-# out_id
+# non-moving blocks in_id
 # ----------------------- #
-rset$splits[[1]]$out_id
-rset$splits[[2]]$out_id
+rset_2$splits[[1]]$in_id
+rset_2$splits[[2]]$in_id
 # ...
-rset$splits[[times]]$out_id
+rset_2$splits[[times]]$in_id

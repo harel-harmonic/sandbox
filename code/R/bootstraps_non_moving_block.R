@@ -1,12 +1,12 @@
-#' bootstraps_moving_block
+#' bootstraps_non_moving_block
 #'
 #' @param first_split_real_data a logical. If TRUE (default), the first split is
 #' the original (unsampled) data.
 #'
-bootstraps_moving_block <- function(data,
-                                    times = 25,
-                                    block_size,
-                                    first_split_real_data = TRUE) {
+bootstraps_non_moving_block <- function(data,
+                                        times = 25,
+                                        block_size,
+                                        first_split_real_data = TRUE) {
     ####################
     # Input validation #
     ####################
@@ -39,32 +39,25 @@ bootstraps_moving_block <- function(data,
     # Moving block bootstrap #
     ##########################
     # Find the indices in each block
-    block_indices <- sapply(
-        1:(n - block_size + 1),
-        function(x) seq.int(from = x, to = x + (block_size - 1))
-    )
-    block_indices <- t(block_indices)
-    # Complement the last incomplete blocks
-    block_indices <- rbind(
-        block_indices,
-        block_indices[rep(nrow(block_indices), block_size - 1), ]
-    )
+    block_indices <- matrix(1:(block_quantity * block_size), ncol = block_size, byrow = TRUE)
+    block_indices[block_indices > nrow(data)] <- NA
     # Revert the prevalence of the observation. This makes sure the freshest
-    # observations are not available for bootstrap sampling before they have
-    # appeared
-    block_indices <- max(block_indices) + 1 - block_indices
+    # observations available for bootstrap sampling
+    block_indices <- max(block_indices, na.rm = TRUE) + 1 - block_indices
     block_indices <- block_indices[nrow(block_indices):1, ncol(block_indices):1]
-    # Convert data frame to list
+    # Convert matrix to list
     block_indices <- split(block_indices, block_indices %>% nrow() %>% seq())
     #'
     ########################
     # Bootstrap the sample #
     ########################
     bootstrap_sampling <- function(x, ...) {
-        if (length(x) == 1) { # if the sample size is one, then return the sample value
-            x
+        x <- x[!is.na(x)]
+        l <- length(x)
+        if (l == 1) { # if the sample size is one, then return the sample value
+            rep(x, l)
         } else { # else sample with replacement
-            base::sample(x, 1, replace = TRUE)
+            base::sample(x, l, replace = TRUE)
         }
     } # bootstrap_sampling
     #'
@@ -73,7 +66,7 @@ bootstraps_moving_block <- function(data,
     #################################################
     for (i in 1:times) {
         # Bootstrap the sample
-        in_id <- map_dbl(block_indices, bootstrap_sampling) %>% unname()
+        in_id <- map(block_indices, bootstrap_sampling) %>% unlist() %>% unname()
         # Store the bootstrap sample in rset object
         rset$splits[[i]]$in_id <- in_id %>% as.integer()
         # Remove strata column form data
