@@ -37,7 +37,7 @@ load_project_libraries <- function() {
         # Data Manipulation
         "tidyverse", "lubridate", "forcats", "magrittr",
         # Graphic Displays
-        "ggplot2", "corrplot",
+        "ggplot2", "corrplot", "gridExtra", "scales",
         # HTML Widgets
         "plotly", "ggvis", "DT",
         # Reproducible Research

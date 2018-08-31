@@ -1,0 +1,186 @@
+---
+title: "Block bootstrap methods"
+author: ""
+date: "31 Augus 2018"
+output: 
+  html_document: 
+    toc: yes
+  html_notebook: 
+    code_folding: hide
+    highlight: tango
+    theme: journal
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+#######################
+# Global Code Options #
+#######################
+knitr::opts_chunk$set(echo = TRUE, results = 'hide', tidy = FALSE,
+                      cache = FALSE, prompt = FALSE,
+                      comment = NA, message = FALSE, warning = FALSE)
+#'
+########################################
+# Load Project Libraries and Functions #
+########################################
+k_path_project <<- rprojroot::find_rstudio_root_file()
+source(file.path(k_path_project, "code", "scripts", "setup.R"))
+```
+
+---
+
+# Introduction
+
+There are (at least) four methods:
+
+(1) Non-overlapping block bootstrap
+(2) Overlapping block bootstrap (moving block bootstrap)
+(3) Stationary block bootstrap
+(4) Subsampling
+
+This notebook describes how to use the first two methods in R.
+Furthermore,we quantify relative efficiency of each mentioned block bootstrap 
+procedure.
+
+---
+
+# The flu dataset
+
+```{r, echo=FALSE, results='as.is'}
+# Import NZ flu dataset
+flu_nz <- import_flu_datasets()[["New-Zealand"]] %>% data.frame()
+# Show the first 6 rows of the data
+head(flu_nz)
+```
+
+---
+
+# Bootstrap sampling
+
+```{r, echo=TRUE}
+# 1. Setup  
+# How many bootstrap samples to generate?
+times <- 8
+# What is the structure of the time series?
+block_size <- 4 # In each month there are 4-5 records
+
+# 2. Non-moving block bootstrap 
+set.seed(1135)
+rset_nmb <- bootstraps_non_moving_block(
+    data = flu_nz,
+    times = times,
+    block_size = block_size,
+    first_split_real_data = FALSE
+)
+
+# 3. Moving block bootstrap
+set.seed(1135)
+rset_mb <- bootstraps_moving_block(
+    data = flu_nz,
+    times = times,
+    block_size = block_size,
+    first_split_real_data = FALSE
+)
+```
+
+---
+
+# Exploring the first split
+
+```{r, results='as.is', echo=TRUE}
+split1_nmb <- rset_nmb$splits[[1]]$in_id
+split1_mb <- rset_mb$splits[[1]]$in_id
+split1 <- bind_cols("Non-moving block" = split1_nmb, "Moving block" = split1_mb)
+bind_rows(head = head(split1), tail = tail(split1))
+```
+
+---
+
+# Converting `rset` object to long table format
+
+```{r, echo=TRUE}
+# 1. Non-moving block bootstrap 
+flu_nz_nmb_long <- flu_nz %>% add_column(Split = 0, .before = 1)
+for(t in 1:times){
+    # Get data permutation
+    flu_nz_bs <- 
+        # Extract the bootstrap sample  
+        flu_nz[rset_nmb$splits[[t]]$in_id,] %>%  
+        # Change the date to the original date (for plotting purposes)  
+        mutate(Date = flu_nz[, "Date"]) %>%   
+        # Add split number  
+        add_column(Split = t, .before = 1)
+    
+    # Append the permutation
+    flu_nz_nmb_long <- bind_rows(flu_nz_nmb_long, flu_nz_bs)
+}
+  
+# 2. Moving block bootstrap
+flu_nz_mb_long <- flu_nz %>% add_column(Split = 0, .before = 1)
+for(t in 1:times){
+    # Get data permutation
+    flu_nz_bs <- 
+        # Extract the bootstrap sample  
+        flu_nz[rset_mb$splits[[t]]$in_id,] %>%  
+        # Change the date to the original date (for plotting purposes)  
+        mutate(Date = flu_nz[, "Date"]) %>%   
+        # Add split number  
+        add_column(Split = t, .before = 1)
+    
+    # Append the permutation
+    flu_nz_mb_long <- bind_rows(flu_nz_mb_long, flu_nz_bs)
+}
+```
+
+* The original table dimensions are `r nrow(flu_nz)` rows on 
+`r ncol(flu_nz)` columns.
+* The bootstrap table dimensions are `r nrow(flu_nz_mb_long)` rows on 
+`r ncol(flu_nz_mb_long)` columns.
+
+---
+
+# Ploting the bootstrap samples
+
+```{r, out.width = "100%", dpi = 200, fig.height = 6, eval=TRUE}
+# 1. Non-moving block bootstrap 
+## Add a layer for each bootstrap sample
+p1 <- flu_nz_nmb_long %>% dplyr::filter(Split != 0) %>%
+    ggplot(aes(x = Date, y = New.Zealand, group = Split)) +
+    geom_line(alpha = 0.2)
+## Add a layer to the original series
+p1 <- 
+    p1 + 
+    geom_line(data = flu_nz_nmb_long %>% dplyr::filter(Split == 0),
+              alpha = 1, color = "blue") + 
+    ggtitle("Non-moving block bootstrap")
+## Set date limits
+p1 <- p1 + 
+    scale_x_date(date_breaks = "1 month", 
+                 labels = date_format("%b-%Y"),
+                 limits = c(ymd("2014-01-01"),ymd("2014-12-31"))) + 
+    theme_bw() + 
+    theme(axis.text.x=element_text(angle = -45, hjust = 0))
+# ------------------------------------------------------------------------------  
+# 2. Moving block bootstrap
+p2 <- flu_nz_nmb_long %>% dplyr::filter(Split != 0) %>%
+    ggplot(aes(x = Date, y = New.Zealand, group = Split)) +
+    geom_line(alpha = 0.2)
+## Add a layer to the original series
+p2 <- 
+    p2 + 
+    geom_line(data = flu_nz_mb_long %>% dplyr::filter(Split == 0),
+              alpha = 1, color = "blue") + 
+    ggtitle("Moving block bootstrap")
+## Set date limits
+p2 <- p2 + 
+    scale_x_date(date_breaks = "1 month", 
+                 labels = date_format("%b-%Y"),
+                 limits = c(ymd("2014-01-01"),ymd("2014-12-31"))) + 
+    theme_bw() + 
+    theme(axis.text.x=element_text(angle = -45, hjust = 0))
+# ------------------------------------------------------------------------------  
+# 3. Visualise the data
+grid.arrange(p1, p2, ncol = 1, nrow = 2)
+```
+
+---
