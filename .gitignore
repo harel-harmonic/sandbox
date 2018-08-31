@@ -50,3 +50,4 @@ rsconnect/
 # Ignore directories #
 ######################
 logs/
+*.html
