@@ -1,0 +1,106 @@
+---
+title: "Wide data"
+subtitle: "Variable Significance and Variable Pruning"
+author: ""
+date: "05 September 2018"
+output: 
+  html_notebook: 
+    df_print: kable
+    highlight: tango
+    theme: journal
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+#######################
+# Global Code Options #
+#######################
+knitr::opts_chunk$set(echo = TRUE, results = 'hide', tidy = FALSE,
+                      cache = FALSE, prompt = FALSE,
+                      comment = NA, message = FALSE, warning = FALSE)
+#'
+########################################
+# Load Project Libraries and Functions #
+########################################
+k_path_project <<- rprojroot::find_rstudio_root_file()
+source(file.path(k_path_project, "code", "scripts", "setup.R"))
+```
+
+
+A worked example
+
+As an example, we give a regression problem with:
+* 2 numeric inputs (one signal sigN, one noise, noiseN), and 
+* 2 high-cardinality, with 100 levels, categoric inputs (one signal, sigC, and one noise, noiseC).
+
+```{r generate_dataset, echo=TRUE, results='markup'}
+set.seed(22451)
+N <- 500
+sigN <- rnorm(N)
+noiseN <- rnorm(N)
+Nlevels <- 100
+zip <- paste0('z', format(1:Nlevels, justify="right"))
+zip <- gsub(' ', '0', zip, fixed=TRUE)
+
+zipval <- runif(Nlevels); names(zipval)=zip
+sigC <- sample(zip, size=N, replace=TRUE)
+noiseC <- sample(zip, size=N, replace=TRUE)
+
+y <- sigN + zipval[sigC] + rnorm(N)
+df <- data.frame(sN = sigN, nN = noiseN, sC = sigC, nC = noiseC, y = y)
+
+dim(df)
+head(df) %>% kableExtra::kable(format = "markdown")
+```
+
+Designing a treatment plan from this data gives us the following derived variable types (we ignore the catP and catD variable types)
+
+```{r treatment_plan, echo=TRUE, results='markup'}
+treatplan <- designTreatmentsN(df,
+                               varlist = base::setdiff(colnames(df), "y"),
+                               outcomename = "y",
+                               verbose = FALSE)
+names(treatplan)
+# scoreFrame contains the significance of each variable
+vtreat_sframe <- treatplan$scoreFrame
+dim(vtreat_sframe)
+kableExtra::kable(vtreat_sframe %>% arrange(varName),
+                  format = "markdown", digits = 2)
+
+vtreat_code <- vtreat_sframe$code
+print(vtreat_code %>% unique())
+
+# Ignore prevelances (catP) and conditional deviations (catD) variables
+vars <- 
+    vtreat_sframe %>% 
+    dplyr::filter(!vtreat_code %in% c("catP", "catD")) %>%
+    .$varName
+
+vtreat_sframe %>% 
+    dplyr::filter(varName %in% vars) %>% 
+    dplyr::select(varName, sig, extraModelDegrees) %>%
+    kableExtra::kable(format = "markdown")
+```
+
+Setting the pruning threshold to $p=\frac{1}{n_{var}}$
+(in this case $p=$ `r round(1/length(vars),3)`), we accept:
+
+* the signaling numeric variable sN, 
+* the impact coding of the signaling categorical variable sC_catN, and 
+* an indicator corresponding to one of sC’s levels.
+
+All derived variables corresponding to the original noise variables are rejected
+
+The function `vtreat::prepare` takes the argument pruneSig to pass in the desired pruning threshold.
+
+```{r treatment_prepare, echo=TRUE, results='markup'}
+pruneSig <- 1/length(vars)
+dfTreat <- vtreat::prepare(treatplan, df, pruneSig = pruneSig,
+                           varRestriction = vars)
+head(dfTreat) %>% kableExtra::kable(format = "markdown")
+```
+
+```{r, out.width = "100%", dpi = 200, fig.height = 8}
+
+```
+
