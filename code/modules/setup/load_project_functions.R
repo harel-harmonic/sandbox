@@ -18,8 +18,8 @@ load_project_functions <- function() {
     invisible(
         sapply(
             list.files(k_path_functions,
-                pattern = "*.R$", full.names = TRUE, recursive = TRUE,
-                ignore.case = TRUE
+                       pattern = "(\\.R$)|(\\.r$)", 
+                       full.names = TRUE, recursive = TRUE, ignore.case = TRUE
             ),
             source,
             local = globalenv()
@@ -32,8 +32,8 @@ load_project_functions <- function() {
     invisible(
         sapply(
             list.files(k_path_modules,
-                pattern = "*.R$", full.names = TRUE, recursive = TRUE,
-                ignore.case = TRUE
+                       pattern = "(\\.R$)|(\\.r$)", 
+                       full.names = TRUE, recursive = TRUE, ignore.case = TRUE
             ),
             source,
             local = globalenv()
