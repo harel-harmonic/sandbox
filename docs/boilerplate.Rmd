@@ -15,7 +15,7 @@ output:
 #######################
 # Global Code Options #
 #######################
-knitr::opts_chunk$set(echo = TRUE, results = 'hide', tidy = TRUE,
+knitr::opts_chunk$set(echo = TRUE, results = 'hide', tidy = FALSE,
                       cache = FALSE, prompt = FALSE,
                       comment = NA, message = FALSE, warning = FALSE)
 #'
