@@ -1,0 +1,75 @@
+---
+title: "`lime` Notebook"
+subtitle: "Local Interpretable Model-Agnostic Explanations"
+author: ""
+date: "12 September 2018"
+output: 
+  html_document: 
+    toc: yes
+  html_notebook: 
+    df_print: kable
+    code_folding: hide
+    highlight: tango
+    theme: journal
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+#######################
+# Global Code Options #
+#######################
+knitr::opts_chunk$set(echo = TRUE, results = 'hide', tidy = TRUE,
+                      cache = FALSE, prompt = FALSE,
+                      comment = NA, message = FALSE, warning = FALSE)
+#'
+########################################
+# Load Project Libraries and Functions #
+########################################
+k_path_project <<- rprojroot::find_rstudio_root_file()
+source(file.path(k_path_project, "code", "scripts", "setup.R"))
+```
+
+```{r, echo=TRUE, eval=FALSE}
+library(caret)
+library(lime)
+library(tidyverse)
+```
+
+```{r, echo=TRUE, results='asis'}
+iris %>% head()
+# Split up the data set
+iris_train <- iris[-(1:5), 1:4]
+iris_test <- iris[1:5, 1:4]
+iris_lab <- iris[[5]][-(1:5)]
+```
+
+```{r, echo=TRUE}
+# Create Random Forest model on iris data
+model <- caret::train(x = iris_train, y = iris_lab, method = 'rf')
+
+# Create a model explanation function based on training data
+explainer <- lime(x = iris_train, model)
+class(explainer)
+names(explainer)
+
+# Explain model predictions
+explanation <- lime::explain(x = iris_test, explainer, 
+                             n_labels = 1, n_features = 2)
+class(explanation)
+names(explanation)
+dim(explanation)
+```
+
+The output is provided in a consistent tabular format and includes the output from the model.
+
+```{r, results = 'markup'}
+explanation %>% 
+    mutate_if(is.numeric, round, digits = 3) %>%
+    select(-model_type, -feature_desc)
+```
+
+And can be visualised directly
+
+```{r, out.width = "100%", dpi = 200, fig.height = 8}
+plot_features(explanation)
+```
