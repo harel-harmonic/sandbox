@@ -1,0 +1,233 @@
+---
+title: "mdl000"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load the project libraries
+
+```{r load_project_libraries, message=FALSE}
+library(tidyverse)
+library(rsample)
+library(rmonic)
+library(assertive)
+library(datasets)
+```
+
+Get the data
+
+```{r}
+# Load the data
+dataset <- mtcars 
+# Split the data to 10 folds
+set.seed(422)
+rsample_object <- vfold_cv(dataset, v = 10)
+```
+
+# Model Functions
+
+1. model_init
+2. model_fit
+3. model_predict
+4. model_log
+5. model_end
+
+## model_init
+
+```{r model_init}
+model_init <- function(rsample_object){
+    ###########################
+    ## Defensive Programming ##
+    ###########################
+    ## do not edit this part by hand
+    if(missing(rsample_object)) stop("No rsample_object was supplied to model_init")
+    rmonic::assert_is_rsample_object(rsample_object)
+    ## here you may add your code
+    
+    
+    ############
+    ## Return ##
+    ############
+    ## do not edit this part by hand
+    return(rsample_object)
+}# model_init
+```
+
+## model_fit
+
+```{r model_fit}
+# Define function
+model_fit <- function(training_set){
+    ###########################
+    ## Defensive Programming ##
+    ###########################
+    ## do not edit this part by hand
+    if(missing(training_set)) stop("No training_set was supplied to model_fit")
+    assertive::assert_is_data.frame(training_set)
+    ## here you may add your code
+    rmonic::assert_dataset_has_column_names(training_set, c("mpg", "cyl"))
+
+    
+    ###########
+    ## Setup ##
+    ###########
+    list_of_models <- list()
+    
+    
+    ###############
+    ## Fit Model ##
+    ###############
+    mdl <- lm(mpg ~ ., data = training_set)
+    list_of_models[["type:lm"]] <- mdl
+    
+    
+    ############
+    ## Return ##
+    ############
+    ## do not edit this part by hand
+    return(list_of_models)
+}# model_fit
+```
+
+## model_predict
+
+```{r model_predict}
+# Define function
+model_predict <- function(test_set, list_of_models){
+    ###########################
+    ## Defensive Programming ##
+    ###########################
+    ## do not edit this part by hand
+    if(missing(test_set)) 
+        stop("No training_set was supplied to model_predict")
+    else if(missing(list_of_models)) 
+        stop("No model was supplied to model_predict")   
+    assertive::assert_is_data.frame(test_set)
+    assertive::assert_is_list(list_of_models)
+    ## here you may add your code
+    rmonic::assert_dataset_has_column_names(training_set, c("mpg", "cyl"))
+
+    
+    ###########
+    ## Setup ##
+    ###########
+    list_of_predictions <- list()
+    
+    
+    #####################
+    ## Make Prediction ##
+    #####################
+    mdl <- list_of_models[[1]]
+    mdl_name <- names(list_of_models)[[1]]
+    pred <- predict(mdl, newdata = test_set, interval = "prediction")
+    rmonic::assert_sets_have_the_same_number_of_observations(test_set, pred)
+    list_of_predictions[[mdl_name]] <- pred
+    
+    
+    ############
+    ## Return ##
+    ############
+    ## do not edit this part by hand
+    return(list_of_predictions)
+}# model_predict
+```
+
+## model_log
+
+```{r model_log}
+# ---------------------------------------------------------------------------- #
+# Log information for debugging purposes
+# ---------------------------------------------------------------------------- #
+model_log <- function(...){
+    ## here you may add your code
+    
+    
+    ############
+    ## Return ##
+    ############
+    ## do not edit this part by hand
+    return(invisible(NULL))
+}# model_log
+```
+
+## model_end
+
+```{r model_end} 
+# ---------------------------------------------------------------------------- #
+# Optional for executing code after completion of a backtest. 
+# This block will not execute in a realtime scenario
+# ---------------------------------------------------------------------------- #
+model_end <- function(list_of_models, list_of_predictions){
+    ###########################
+    ## Defensive Programming ##
+    ###########################
+    ## do not edit this part by hand
+    if(missing(list_of_models))
+        stop("no list_of_models was supplied to model_end")
+    if(missing(list_of_predictions))
+        stop("no list_of_predictions was supplied to model_end")
+    assertive::assert_is_list(list_of_models)
+    assertive::assert_is_list(list_of_predictions)
+    ## here you may add your code
+    
+    
+    ###################################
+    ## Parse the list_of_predictions ##
+    ###################################
+    folds_predictions <- 
+    do.call(rbind, lapply(list_of_predictions, data.frame, stringsAsFactors=FALSE))
+
+    
+    
+    ############
+    ## Return ##
+    ############
+    ## do not edit this part by hand
+    return(invisible(NULL))
+}# model_end
+```
+
+# Run Model
+
+## Predict an individual fold
+
+```{r}
+# Exract the data from the folds into training and test sets
+k <- 1
+training_set <- rsample::training(rsample_object$splits[[k]])
+test_set <- rsample::testing(rsample_object$splits[[k]])
+assertive::assert_are_disjoint_sets(training_set, test_set)
+# Fit a model to the training folds and predict the test fold
+list_of_models <- model_fit(training_set)
+list_of_predictions <- model_predict(test_set, list_of_models)
+list_of_predictions[[1]]
+```
+
+## Predict all the folds
+
+```{r}
+K <- length(rsample_object$splits)
+folds_predictions <- list()
+
+for(k in 1:K){
+    # Exract the data from the folds into training and test sets
+    training_set <- rsample::training(rsample_object$splits[[k]])
+    test_set <- rsample::testing(rsample_object$splits[[k]])
+    assertive::assert_are_disjoint_sets(training_set, test_set)
+    # Fit a model to the training folds and predict the test fold
+    list_of_models <- model_fit(training_set)
+    folds_predictions[[k]] <- model_predict(test_set, list_of_models)
+}
+
+folds_predictions <- 
+    do.call(rbind, lapply(folds_predictions, data.frame, stringsAsFactors=FALSE))
+
+# colnames(folds_predictions) <- 
+#     folds_predictions %>% colnames() %>% str_remove_all("type.")
+
+folds_predictions
+```
+
