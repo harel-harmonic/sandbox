@@ -81,7 +81,8 @@ model_fit <- function(training_set){
     ## Fit Model ##
     ###############
     mdl <- lm(mpg ~ ., data = training_set)
-    list_of_models[["type:lm"]] <- mdl
+    mdl_metadata <- '[{"type":"logistic regression", "name":"mdl000"}]'
+    list_of_models[[mdl_metadata]] <- mdl
     
     
     ############
