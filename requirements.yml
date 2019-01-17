@@ -1,0 +1,9 @@
+packages:
+  CRAN:
+  - lubridate
+  - assertive
+  - jsonlite
+  GitHub:
+  - tidyverse/lubridate
+  - tidyverse/forcats
+
