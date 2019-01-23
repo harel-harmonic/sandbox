@@ -18,6 +18,7 @@ k_path_data_processed <<- file.path(k_path_project, "data", "processed")
 k_path_data_for_modeling <<- file.path(k_path_project, "data", "for-modeling")
 k_path_data_not_for_modeling <<- file.path(k_path_project, "data", "not-for-modeling")
 k_path_notebooks <<- file.path(k_path_project, "docs", "notebooks")
+k_path_reports <<- file.path(k_path_project, "docs", "reports")
 
 
 #########################
