@@ -1,6 +1,9 @@
 ################################
 ## Project's Global Variables ##
 ################################
+## Session info
+k_counter_calls <- tryCatch(k_counter_calls + 1, error = function(e) 0)
+k_session_uid <- if(k_counter_calls==0) rmonic::rand_strings(1, 10) else k_session_uid
 ## Folder paths
 k_path_project <<- tryCatch(rprojroot::find_rstudio_root_file(), error = function(e) getwd())
 k_path_code <<- file.path(k_path_project, "code")
@@ -26,6 +29,20 @@ k_path_reports <<- file.path(k_path_project, "docs", "reports")
 #########################
 library(rmonic)
 rmonic::load_packages(file = file.path(k_path_project, "requirements.yml"))
+
+
+#########################
+## Conflict Resolution ##
+#########################
+if(suppressWarnings(require(conflicted, quietly = TRUE))){
+    ## Resolve conflicts - persistently prefer one function over another
+    suppressMessages({
+        conflict_prefer("filter", "dplyr")
+        conflict_prefer("setup", "rmonic")
+    })
+    ## Show conflicts on startup
+    if(k_counter_calls == 0) conflicted::conflict_scout()
+}
 
 
 #########################
