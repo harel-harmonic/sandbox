@@ -39,6 +39,9 @@ if(suppressWarnings(require(conflicted, quietly = TRUE))){
     suppressMessages({
         conflict_prefer("filter", "dplyr")
         conflict_prefer("setup", "rmonic")
+        conflict_prefer("union", "dplyr")
+        conflict_prefer("setdiff", "dplyr")
+        conflict_prefer("intersect", "dplyr")
     })
     ## Show conflicts on startup
     if(k_counter_calls == 0) conflicted::conflict_scout()
