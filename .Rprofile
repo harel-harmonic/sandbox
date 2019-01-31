@@ -14,14 +14,16 @@ k_path_modules <<- file.path(k_path_project, "code", "modules")
 k_path_functions <<- file.path(k_path_project, "code", "R")
 k_path_scripts <<- file.path(k_path_project, "code", "scripts")
 k_path_tests <<- file.path(k_path_project, "code", "tests")
-k_path_data_archive <<- file.path(k_path_project, "data", "archive")
 k_path_data_raw <<- file.path(k_path_project, "data", "raw")
 k_path_data_interim <<- file.path(k_path_project, "data", "interim")
 k_path_data_processed <<- file.path(k_path_project, "data", "processed")
 k_path_data_for_modeling <<- file.path(k_path_project, "data", "for-modeling")
 k_path_data_not_for_modeling <<- file.path(k_path_project, "data", "not-for-modeling")
+k_path_submissions <<- file.path(k_path_project, "data", "submissions")
 k_path_notebooks <<- file.path(k_path_project, "docs", "notebooks")
 k_path_reports <<- file.path(k_path_project, "docs", "reports")
+k_path_archive_local <<- file.path(k_path_project, "data", "archive")
+k_path_archive_shared <<- file.path(k_path_project, "data", "archive")
 
 
 #########################
