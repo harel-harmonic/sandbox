@@ -51,6 +51,9 @@ rsconnect/
 *.rdx
 *.png
 
+# Automated script
+code/scripts/ctrl+shift+w.R
+
 
 ###################
 # Un-ignore Files #
@@ -59,5 +62,4 @@ rsconnect/
 !.Rprofile
 !*.Rproj
 !requirements.yml
-code/scripts/ctrl+shift+w.R
 .Rproj.user

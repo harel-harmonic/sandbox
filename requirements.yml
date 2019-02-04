@@ -11,12 +11,15 @@ packages:
   - tibble (>= 1.4.2)
   - whisker (>= 0.3-2)
   - yaml (>= 2.2.0)
-  - digest(>= 0.6.18)
+  - digest (>= 0.6.18)
+  - xts (>= 0.11-2)
+  - fs (>= 1.2.6)
   - foreach
   - knitr
   - rmarkdown
   - testthat
   - tidyverse
+  - conflicted
   GitHub:
   - tidyverse/lubridate
   - tidyverse/forcats

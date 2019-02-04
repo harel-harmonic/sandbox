@@ -1,6 +1,9 @@
 ################################################################################
 ##                             Model Backtesting                              ##
 ################################################################################
+#' WARNINGR:
+#' Researching and backtesting is like drinking and driving.
+#' Do not research under the influence of a backtest.
 rmonic::setup()
 
 
@@ -20,16 +23,19 @@ unique_key_column <- "ROWID"
 library(lubridate)
 
 
+################
+## Load Model ##
+################
+## Load model_init, model_fit, model_store, model_end located in model folder
+rmonic::load_model_components(model_name, k_path_models)
+## Load model helper functions located in model folder under helper-functions
+rmonic::load_model_helper_functions(model_name, k_path_models)
+
+
 #############################
 ## Load Data for Modelling ##
 #############################
 rset_obj <- load_data_for_modelling()
-
-
-#############################
-## Load Model's Components ##
-#############################
-load_model(model_name, k_path_models)
 
 
 ###############
@@ -50,7 +56,7 @@ results_list <- foreach(k = 1:K, .combine = rmonic::bind_lists) %do% {
     ## Fit model(s) to the training set
     list_of_models <- model_fit(training_set,
                                 unique_key_column = unique_key_column,
-                                model_uid = model_yaml[["model_uid"]],
+                                model_uid = model_uid,
                                 # Extra input argument for model_fit
                                 split_num = k,
                                 parameters = model_yaml[["parameters"]])
@@ -65,4 +71,4 @@ results_list <- foreach(k = 1:K, .combine = rmonic::bind_lists) %do% {
 }# foreach-loop
 
 ## Post-modelling operations
-results_df <- model_end(results_list)
+results_df <- model_end(list_of_tables = results_list, model_name = model_name)
