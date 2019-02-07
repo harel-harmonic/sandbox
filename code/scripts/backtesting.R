@@ -48,7 +48,8 @@ K <- rmonic::get_rsample_num_of_splits(rset_obj)
 model_init(model_name)
 
 ## Loop over the dataset batches
-results_list <- foreach(k = 1:K, .combine = rmonic::bind_lists) %do% {
+results_list <- list()
+for(k in 1:K) {
     ## Extract the current training set and test set from the rsample object
     training_set <- rmonic::get_rsample_training_set(rset_obj, k)
     test_set <- rmonic::get_rsample_test_set(rset_obj, k)
@@ -68,6 +69,9 @@ results_list <- foreach(k = 1:K, .combine = rmonic::bind_lists) %do% {
 
     ## Store the results for further analysis
     list_of_tables <- model_store(list_of_predictions, list_of_models)
+
+    ## Accumulate the results
+    results_list <- rmonic::bind_lists(results_list, list_of_tables)
 }# foreach-loop
 
 ## Post-modelling operations
