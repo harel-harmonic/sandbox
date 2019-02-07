@@ -9,8 +9,8 @@ model_store <- function(
     ## Do not edit this part by hand
     rmonic::check_model_store_input_arguments(list_of_predictions, list_of_models)
     ## Here you may add your assertions
-
-
+    
+    
     ################
     ## Store Data ##
     ################
@@ -22,8 +22,8 @@ model_store <- function(
     MODELS_DATA <- rmonic::store_models_data(list_of_predictions)
     ## Parse the prediction models metadata
     MODELS_METADATA <- rmonic::store_models_metadata(list_of_predictions)
-
-
+    
+    
     ############
     ## Return ##
     ############

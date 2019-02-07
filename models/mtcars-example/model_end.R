@@ -5,8 +5,8 @@ model_end <- function(){
     ## Here you may add your assertions
     assertive::assert_all_are_existing(c("model_name", "list_of_bind_tables"),
                                        envir = .GlobalEnv)
-
-
+    
+    
     #############################################
     ## Join the Predictions and their Metadata ##
     #############################################
@@ -16,8 +16,8 @@ model_end <- function(){
             list_of_bind_tables$PREDICTIONS_METADATA
         )
     rmonic::assert_objects_have_the_same_number_of_observations(PREDICTIONS, list_of_bind_tables$PREDICTIONS_DATA)
-
-
+    
+    
     ########################################################################
     ## Upload the Predictions to a Centralised Place for Further Analysis ##
     ########################################################################
@@ -38,8 +38,8 @@ model_end <- function(){
         dplyr::summarise(RESPONSE_VALUE = median(RESPONSE_VALUE, na.rm = TRUE))
     ## Make a submission
     submit_predictions(submission_data, model_name)
-
-
+    
+    
     ############
     ## Return ##
     ############

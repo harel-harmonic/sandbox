@@ -12,8 +12,8 @@ model_predict <- function(
     ## Do not edit this part by hand
     rmonic::check_model_predict_input_arguments(test_set, unique_key_column, list_of_models)
     ## Here you may add your assertions
-
-
+    
+    
     ###########
     ## Setup ##
     ###########
@@ -25,8 +25,8 @@ model_predict <- function(
     ### Get the observations UIDs
     uid <- test_set[, unique_key_column]
     ## Here you may add your code
-
-
+    
+    
     ##################
     ## Calculations ##
     ##################
@@ -46,23 +46,23 @@ model_predict <- function(
         ## Extract the fitted model object and name
         mdl_obj <- list_of_models[[m]]
         mdl_name <- names(list_of_models)[m]
-
+        
         ## Predict the test data on the m_th model
         response_vars <- predict(mdl_obj, test_set, interval = "predict")
-
+        
         ## Predictions correction: mpg cannot be negative
         response_vars[response_vars < 0] <- 0
-
+        
         ## Model output QA
         rmonic::assert_objects_have_the_same_number_of_observations(response_vars, test_set)
         if(response_vars %>% is.na() %>% any()) stop("The predictions include NA values")
         assertive::assert_all_are_non_negative(response_vars)
-
+        
         ## Store the response variables, where each has:
         ## (A) Prediction data (observation key + value), stored in a data.frame
         ## (B) Prediction metadata, stored as the data.frame name
         for(colname in colnames(response_vars)){
-
+            
             ## DATA: Store the predictions in a data.frame as key-value pairs
             data <- data.frame(KEY = uid, VALUE = response_vars[, colname],
                                stringsAsFactors = FALSE)
@@ -70,12 +70,12 @@ model_predict <- function(
             metadata <- compose_model_name(mdl_name, response_type = colname)
             ## Append the predicted values to the list
             list_of_predictions[[metadata]] <- data
-
+            
         }# prediction-type for-loop (e.g. "fit", "lwr", "upr")
-
+        
     }# model-wise for-loop (e.g. "mpg", "cyl", "hp")
-
-
+    
+    
     ############
     ## Return ##
     ############

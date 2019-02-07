@@ -20,6 +20,7 @@ packages:
   - testthat
   - tidyverse
   - conflicted
+  - archivist (>= 2.3.3)
   GitHub:
   - tidyverse/lubridate
   - tidyverse/forcats

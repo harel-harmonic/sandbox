@@ -13,10 +13,9 @@ model_fit <- function(
     ## Do not edit this part by hand
     rmonic::check_model_fit_input_arguments(training_set, unique_key_column, model_uid)
     ## Here you may add your assertions
-    assertive::assert_all_are_existing(c("split_num"),
-                                       envir = .GlobalEnv)
-
-
+    assertive::assert_all_are_existing(c("split_num"), envir = .GlobalEnv)
+    
+    
     ###########
     ## Setup ##
     ###########
@@ -26,8 +25,8 @@ model_fit <- function(
     ### Remove the unique key column from the training set (to avoid overfitting)
     training_set <- training_set %>% select(-unique_key_column)
     ## Here you may add your code
-
-
+    
+    
     #########################
     ## Note for Developers ##
     #########################
@@ -41,8 +40,8 @@ model_fit <- function(
     ## 1. Find a for loop a convenient implementation
     ## 2. Change the order of the aforementioned parts to suit your needs
     ##
-
-
+    
+    
     ################################################
     ## Composing Metadata for the Model Fit Phase ##
     ################################################
@@ -68,21 +67,25 @@ model_fit <- function(
     ##
     mdl_mpg_name <- rmonic::compose_model_name(model_uid = model_uid,
                                                target_variable = "mpg",
-                                               split = split_num)
-
-
+                                               split = split_num) 
+    mdl_mpg_name <- mdl_mpg_name %>% rmonic::standardize_json_strings()
+    
+    
     ###############
     ## Fit Model ##
     ###############
     mdl_mpg_obj <- lm("MPG ~ .", training_set)
-
-
+    
+    
     ################################
     ## Store Model in a Flat List ##
     ################################
+    # saveToLocalRepo(model, repoDir, userTags = c("my_model", "do not delete"))
+    # attr(x, "tags" ) = c( "name1", "name2" )
+    archivist::saveToLocalRepo(artifact = mdl_mpg_obj)
     list_of_models[[mdl_mpg_name]] <- mdl_mpg_obj
-
-
+    
+    
     ############
     ## Return ##
     ############
