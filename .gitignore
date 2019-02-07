@@ -63,3 +63,4 @@ code/scripts/ctrl+shift+w.R
 !*.Rproj
 !requirements.yml
 .Rproj.user
+models/mtcars-example/cache/

@@ -1,0 +1,9 @@
+model_metadata:
+# Mandatory Fields
+  model_uid: TQro5lE6NsiIdRWy0zm2
+  model_creation_date: 2019-02-07 01:51:49 #UTC Time Zone
+  model_author: harel.l
+  model_parent: 
+  model_name: mtcars-example
+# Optional Fields
+parameters: 

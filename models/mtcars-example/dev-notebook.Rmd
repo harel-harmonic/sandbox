@@ -1,0 +1,661 @@
+---
+title: "`mtcars` Example"
+author: "Bilbo Baggins"
+output: 
+  html_document: 
+    highlight: tango
+    theme: journal
+    toc: yes
+    toc_float: true
+---
+
+```{r setup, include = FALSE, message = FALSE, results = 'hide', echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+model_name <- "mtcars-example"
+k_path_project <- rprojroot::find_rstudio_root_file()
+k_path_models <- file.path(k_path_project, "models")
+k_path_mtcars <- file.path(k_path_models, model_name)
+library(kableExtra)
+library(foreach)
+library(tidyverse)
+```
+
+## Synopsis {.tabset .tabset-fade}
+
+### Introduction
+
+This is a tutorial which explains how to develop a prediction model using the `rmonic` framwork.
+
+Here, we fit a model to the [mtcars](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html) data set.
+
+The target variable in mind is the miles per gallon, named **mpg**. Since miles is a non-negative numeric measurment, a regression prediction model is adequate. 
+
+To stay focused on the `rmonic` framework, we use linear regression as the ML algorithm. 
+In order to demonstrate how to use parameters in the modelling process, we employ a polynomial linear regression.
+
+Finally, to evaluate the model performance, we use the {[rsample](https://tidymodels.github.io/rsample/)} package.
+
+### Overview 
+
+Under the `rmonic` framework, each model is composed of five function:
+
+1. [model_init](#model_init) - Prepare everything the model needs
+2. [model_fit](#model_fit) - Fit a model to training data
+3. [model_predict](#model_predict) - Predict test data 
+4. [model_store](#model_store) - Store the process iteration/epoch results 
+5. [model_end](#model_end) - Performe some post-modelling operations
+
+Depending on the need, you can create a new model or extend an existing model by calling *rmonic::create_model()* or *rmonic::extend_model()* respectively. 
+These functions create a new folder with all the necessary components. 
+The model's components are boilerplate, and the role of the data scientist is to 
+
+(a) formulate an idea to a model, and 
+(b) implement the idea using the components. 
+
+For many applications, only the content of **model_fit** and **model_predict** varies between different models. This means the data scientist can go from model ideation to implementation quickly and focus the development efforts on what actually matters, rather than overhead.
+
+### Model Workflow
+
+1. When the model is launched: run `model_init()`
+2. On each training data batch: 
+a. Run `model_fit()` - Fit a model to training data
+b. Run `model_predict()` - Predict test data
+c. Run `model_store()` - Store the process iteration/epoch results 
+3. Run `model_end()` - Perform some post-modelling operations
+
+---
+
+## Developing a Model {.tabset .tabset-fade}
+
+### model_init {#model_init}
+
+```{r model_init}
+# Prepare everything the prediction model needs
+model_init <- function(model_name){
+    ###########################
+    ## Defensive Programming ##
+    ###########################
+    ## Do not edit this part by hand
+    assertive::assert_is_a_non_empty_string(model_name)
+    ## Here you may add your assertions. Useful expressions include:
+    ## * base::missing() - test whether a value was specified as a function arg
+    ## * base::stopifnot() - for conditional statements to ensure code integrity
+    ## * if(conditional statements) stop(<failure reason>)
+    ## * {assertive} - informative check functions to ensure code integrity
+
+
+    ###########
+    ## Setup ##
+    ###########
+    ## Initialize the caching engine
+    k_path_model_cache <<- file.path(k_path_models, model_name, "cache")
+    archivist::createLocalRepo(k_path_model_cache, force = TRUE)
+    archivist::setLocalRepo(k_path_model_cache)
+    ## Get model's metadata from yaml file and make it available globally
+    ## Note: model's metadata may contain parameters to pass into the model
+    model_yaml <<- rmonic::load_model_metadata(model_name, k_path_models)
+    ## Add model metadata parameters to the global environment
+    list2env(model_yaml[["model_metadata"]], envir = .GlobalEnv)
+    ## Add global variables with default values that other model components need
+    split_num <<- 0
+
+    
+    ##################
+    ## Calculations ##
+    ##################
+    ## Here you may add your code
+
+
+    ############
+    ## Return ##
+    ############
+    ## Do not edit this part by hand
+    return(invisible())
+}
+```
+
+### model_fit {#model_fit}
+
+```{r model_fit}
+# Fit one or more models to the data
+model_fit <- function(
+    # A data.frame where samples are in rows and features are in columns.
+    training_set = NULL,
+    # A column name which contains the identifiers of the data.frame rows.
+    unique_key_column = "ROWID",
+    # The model unique identifier. e.g. "u5NAm4bNl5cMIOUXZMQe".
+    # Note: This information is available in config.yml.
+    model_uid)
+{
+    ###########################
+    ## Defensive Programming ##
+    ###########################
+    ## Do not edit this part by hand
+    rmonic::check_model_fit_input_arguments(training_set, unique_key_column, model_uid)
+    ## Here you may add your assertions
+    assertive::assert_all_are_existing(c("split_num"),
+                                       envir = .GlobalEnv)
+
+
+    ###########
+    ## Setup ##
+    ###########
+    ## Do not edit this part by hand
+    ### Allocate a list for the results
+    list_of_models <- list()
+    ### Remove the unique key column from the training set (to avoid overfitting)
+    training_set <- training_set %>% select(-unique_key_column)
+    ## Here you may add your code
+
+
+    #########################
+    ## Note for Developers ##
+    #########################
+    ##
+    ## The prediction process, contains at least the following three parts:
+    ## 1. Compose model metadata and store it in a JSON format
+    ## 2. Fit model to the training data
+    ## 3. Store the model and its metadata in a flat list
+    ##
+    ## Often, more than one model are created. If this is the case, you may:
+    ## 1. Find a for loop a convenient implementation
+    ## 2. Change the order of the aforementioned parts to suit your needs
+    ##
+
+
+    ################################################
+    ## Composing Metadata for the Model Fit Phase ##
+    ################################################
+    ##
+    ## The following is a description of how to compose informative and valid
+    ## metadata that describe model_fit outcome:
+    ##
+    ## 1. Metadata that extends the information available in the config.yml file
+    ##    is passed via the model name. Examples for additional information are:
+    ## (a) Split number. If some sampling schema is employed, say K-fold CV or
+    ##     bootstrap, the split number alleviates post-processing operations.
+    ## (b) The target variable (in case the same dataset has more than one
+    ##     target variables, say predicting precipitation and wind-speed).
+    ## (c) Grouping variables (in case the dataset is grouped by some variable,
+    ##     say region).
+    ##
+    ## 2. Guidelines for composing a model name:
+    ## (a) For the purpose of associating between a set of prediction and the
+    ##     model which created it model_uid must be part of the model name.
+    ## (b) The location of the different components in the name doesn't matter.
+    ## (c) Each metadata must be a key-value pair. See details in
+    ##     help(compose_model_name).
+    ##
+    mdl_mpg_name <- rmonic::compose_model_name(model_uid = model_uid,
+                                               target_variable = "mpg",
+                                               split = split_num)
+
+
+    ###############
+    ## Fit Model ##
+    ###############
+    mdl_mpg_obj <- lm("MPG ~ .", training_set)
+
+
+    ################################
+    ## Store Model in a Flat List ##
+    ################################
+    list_of_models[[mdl_mpg_name]] <- mdl_mpg_obj
+
+
+    ############
+    ## Return ##
+    ############
+    ## Do not edit this part by hand
+    return(list_of_models)
+}
+```
+
+### model_predict {#model_predict}
+
+```{r model_predict}
+# Predict the testset using the fitted models
+model_predict <- function(
+    # A data.frame where samples are in rows and features are in columns.
+    test_set = NULL,
+    # A column name which contains the identifiers of the data.frame rows.
+    unique_key_column = "ROWID",
+    # The result of model_fit()
+    list_of_models = NULL)
+{
+    ###########################
+    ## Defensive Programming ##
+    ###########################
+    ## Do not edit this part by hand
+    rmonic::check_model_predict_input_arguments(test_set, unique_key_column, list_of_models)
+    ## Here you may add your assertions
+
+
+    ###########
+    ## Setup ##
+    ###########
+    ## Do not edit this part by hand
+    ### Allocate list for the results
+    list_of_predictions <- list()
+    ### Get the number of models
+    M <- length(list_of_models)
+    ### Get the observations UIDs
+    uid <- test_set[, unique_key_column]
+    ## Here you may add your code
+
+
+    ##################
+    ## Calculations ##
+    ##################
+    ## In this part, we use a given test set and fitted model objects to produce
+    ## predictions. While the prediction function (e.g. stats::predict) may vary
+    ## between algorithms, the data and metadata are stored in a similar way.
+    ##
+    ## Each set of prediction has:
+    ## (A) Prediction data (observation KEY + VALUE), stored in a data.frame
+    ## (B) Prediction metadata, stored as the data.frame name
+    ##
+    ## Once (A) and (B) are ready, we store them in a flat list. Example:
+    ## list_of_models[[metadata]] <- data
+    ##
+    ## Here you may remove/edit/add your code
+    for(m in 1:M){
+        ## Extract the fitted model object and name
+        mdl_obj <- list_of_models[[m]]
+        mdl_name <- names(list_of_models)[m]
+
+        ## Predict the test data on the m_th model
+        response_vars <- predict(mdl_obj, test_set, interval = "predict")
+
+        ## Predictions correction: mpg cannot be negative
+        response_vars[response_vars < 0] <- 0
+
+        ## Model output QA
+        rmonic::assert_objects_have_the_same_number_of_observations(response_vars, test_set)
+        if(response_vars %>% is.na() %>% any()) stop("The predictions include NA values")
+        assertive::assert_all_are_non_negative(response_vars)
+
+        ## Store the response variables, where each has:
+        ## (A) Prediction data (observation key + value), stored in a data.frame
+        ## (B) Prediction metadata, stored as the data.frame name
+        for(colname in colnames(response_vars)){
+
+            ## DATA: Store the predictions in a data.frame as key-value pairs
+            data <- data.frame(KEY = uid, VALUE = response_vars[, colname],
+                               stringsAsFactors = FALSE)
+            ## METADATA: Store the predictions metadata in a valid JSON string
+            metadata <- compose_model_name(mdl_name, response_type = colname)
+            ## Append the predicted values to the list
+            list_of_predictions[[metadata]] <- data
+
+        }# prediction-type for-loop (e.g. "fit", "lwr", "upr")
+
+    }# model-wise for-loop (e.g. "mpg", "cyl", "hp")
+
+
+    ############
+    ## Return ##
+    ############
+    ## Do not edit this part by hand
+    check_colnames <- function(x) assertive::assert_are_set_equal(colnames(x), c("KEY", "VALUE"))
+    sapply(list_of_predictions, check_colnames)
+    return(list_of_predictions)
+}
+```
+
+### model_store {#model_store}
+
+```{r model_store}
+# Log the results (predictions and model objects) in a concise and consistent manner
+model_store <- function(
+    # The output of model_predict()
+    list_of_predictions,
+    # The output of model_fit()
+    list_of_models){
+    ###########################
+    ## Defensive Programming ##
+    ###########################
+    ## Do not edit this part by hand
+    rmonic::check_model_store_input_arguments(list_of_predictions, list_of_models)
+    ## Here you may add your assertions
+
+
+    ################
+    ## Store Data ##
+    ################
+    ## Parse the prediction models data
+    PREDICTIONS_DATA <- rmonic::store_predictions_data(list_of_predictions)
+    ## Parse the prediction models metadata
+    PREDICTIONS_METADATA <- rmonic::store_predictions_metadata(list_of_predictions)
+    ## Parse the prediction models data
+    MODELS_DATA <- rmonic::store_models_data(list_of_predictions)
+    ## Parse the prediction models metadata
+    MODELS_METADATA <- rmonic::store_models_metadata(list_of_predictions)
+
+
+    ############
+    ## Return ##
+    ############
+    list_of_tables <- list(PREDICTIONS_DATA = PREDICTIONS_DATA,
+                           PREDICTIONS_METADATA = PREDICTIONS_METADATA,
+                           MODELS_DATA = MODELS_DATA,
+                           MODELS_METADATA = MODELS_METADATA)
+    return(list_of_tables)
+}
+```
+
+### model_end {#model_end}
+
+```{r model_end}
+# Optional: Execute code after completion of backtesting
+model_end <- function(){
+    ###########################
+    ## Defensive Programming ##
+    ###########################
+    ## Here you may add your assertions
+    assertive::assert_all_are_existing(c("model_name", "list_of_bind_tables"),
+                                       envir = .GlobalEnv)
+
+
+    #############################################
+    ## Join the Predictions and their Metadata ##
+    #############################################
+    PREDICTIONS <-
+        rmonic::join_predictions_tables(
+            list_of_bind_tables$PREDICTIONS_DATA,
+            list_of_bind_tables$PREDICTIONS_METADATA
+        )
+    rmonic::assert_objects_have_the_same_number_of_observations(PREDICTIONS, list_of_bind_tables$PREDICTIONS_DATA)
+
+
+    ########################################################################
+    ## Upload the Predictions to a Centralised Place for Further Analysis ##
+    ########################################################################
+    ##
+    ## NOTE [@product-owner]:
+    ## This function is defined by the product owner. By default, it assumes the
+    ## first input argument is a predictions table where the:
+    ## * 1st column contains the observations unique identifiers (UIDs). These
+    ## values correspond to the UIDs of the original dataset identified prior to
+    ## the modelling process. The UIDs link between the predictions table and
+    ## the ground truth.
+    ## * 2nd column contains non-negative prediction values.
+    ##
+    ## Collapse the table by observation id
+    submission_data <-
+        PREDICTIONS %>%
+        dplyr::group_by(OBSERVATION_UID) %>%
+        dplyr::summarise(RESPONSE_VALUE = median(RESPONSE_VALUE, na.rm = TRUE))
+    ## Make a submission
+    submit_predictions(submission_data, model_name)
+
+
+    ############
+    ## Return ##
+    ############
+    return(PREDICTIONS)
+}
+```
+
+<!-- Store Notebook Changes -->
+
+```{r, echo = FALSE, results = 'hide'}
+## Store notebook changes in model components.
+## This means that the code above will take effect during model backtesting.
+if(existsFunction("model_init")) 
+    rmonic::write_function(model_init, file.path(k_path_mtcars, paste0("model_init.R")))
+if(existsFunction("model_fit")) 
+    rmonic::write_function(model_fit, file.path(k_path_mtcars, paste0("model_fit.R")))
+if(existsFunction("model_predict")) 
+    rmonic::write_function(model_predict, file.path(k_path_mtcars, paste0("model_predict.R")))
+if(existsFunction("model_store")) 
+    rmonic::write_function(model_store, file.path(k_path_mtcars, paste0("model_store.R")))
+if(existsFunction("model_end")) 
+    rmonic::write_function(model_end, file.path(k_path_mtcars, paste0("model_end.R")))
+```
+
+---
+
+## Running the Model {.tabset .tabset-fade}
+
+### Preparing the Data for Modelling
+
+```{r data_preparations, message=FALSE}
+#' @title Load Data for Modelling
+#'
+#' @description load_data_for_modelling provides the data for the modelling
+#'   stage.
+#'
+#' @details \code{rmonic} focal point is on the modelling process. Yet, to
+#'   proceed with the modelling phase, a prior phase of preparing data for
+#'   modelling is needed.
+#'
+#'   The data and the programming logic varies from one project to another.
+#'   Therefore, it is not possible to generalize it to work
+#'   out-of-the-rmonic-box. Instead, it is up to the product-owner/team-leader
+#'   to define its content.
+#'
+#' @note: Using this function is one way of enabling the project data source for
+#' modelling. In case you choose to use the function, here are some good
+#' practices to increase reproducibility:
+#'
+#' \enumerate{
+#'   \item Return an object created by \code{rsample}.
+#'   \item Store the function in the project's shared function folder
+#'   (i.e. \code{k_path_functions}).
+#' }
+#'
+#' @return An object created by \code{rsample}.
+#'
+load_data_for_modelling <- function(){
+    ##################
+    ## Get the Data ##
+    ##################
+    ## Import the data
+    dataset <- mtcars
+
+
+    ########################
+    ## Data Preprocessing ##
+    ########################
+    ## Standardise column names
+    dataset <- dataset %>% rmonic::standardize_col_names()
+    ## Set the unique key column
+    unique_key_column <- "ROWID"
+    ## Add a unique identifier such that each observation (row) is associated with
+    ## a unique ID. Named it "ROWID".
+    dataset <- dataset %>% tibble::rownames_to_column(var = unique_key_column)
+    rownames(dataset) <- NULL
+
+
+    ####################
+    ## Split the Data ##
+    ####################
+    ## Option 1: Split the data to 70%/30% Training/Test sets
+    # set.seed(902)
+    # rset_obj <- rsample::initial_split(dataset, prop = 0.7)
+    ## Option 2: K-fold cross validation
+    set.seed(902)
+    rset_obj <- rsample::vfold_cv(dataset, v = 5)
+    ## Option 3: Bootstrap Sampling
+    # set.seed(902)
+    # rset_obj <- rsample::bootstraps(dataset, times = 20)
+
+
+    ############
+    ## Return ##
+    ############
+    return(rset_obj)
+}
+```
+
+<!-- Store Notebook Changes -->
+
+```{r, echo = FALSE, results = 'hide'}
+## Store notebook changes under helper-functions.
+## This means that the code above will take effect during model backtesting.
+target <- file.path(k_path_mtcars, "helper-functions", paste0("load_data_for_modelling.R"))
+if(existsFunction("load_data_for_modelling")) 
+    rmonic::write_function(load_data_for_modelling, target)
+```
+
+
+### Backesting
+
+```{r model_backesting, message=FALSE}
+################################################################################
+##                             Model Backtesting                              ##
+################################################################################
+#' WARNINGR:
+#' Researching and backtesting is like drinking and driving.
+#' Do not research under the influence of a backtest.
+rmonic::setup()
+
+
+####################
+## Configurations ##
+####################
+## Define the model's name (must be identical to the model folder's name)
+model_name <- "mtcars-example"
+## Define the dataset's primary key - a column which uniquely identifies each row
+unique_key_column <- "ROWID"
+
+
+################
+## Load Model ##
+################
+## Load model_init, model_fit, model_store, model_end located in model folder
+rmonic::load_model_components(model_name, k_path_models)
+## Load model helper functions located in model folder under helper-functions
+rmonic::load_model_helper_functions(model_name, k_path_models)
+
+
+#############################
+## Load Data for Modelling ##
+#############################
+rset_obj <- load_data_for_modelling()
+
+
+###############
+## Run Model ##
+###############
+## Find out how many splits the rsample object contains
+K <- rmonic::get_rsample_num_of_splits(rset_obj)
+
+## Prepare everything our model needs
+model_init(model_name)
+
+## Loop over the dataset batches
+list_of_bind_tables <- list()
+for(k in 1:K) {
+    ## Extract the current training set and test set from the rsample object
+    training_set <- rmonic::get_rsample_training_set(rset_obj, k)
+    test_set <- rmonic::get_rsample_test_set(rset_obj, k)
+
+    ## Fit model(s) to the training set
+    split_num <<- k # model_fit uses this value to form descriptive model names
+    list_of_models <- model_fit(training_set,
+                                unique_key_column = unique_key_column,
+                                model_uid = model_uid)
+
+    ## Predict the test set
+    list_of_predictions <- model_predict(test_set,
+                                         unique_key_column = unique_key_column,
+                                         list_of_models)
+
+    ## Store the results for further analysis
+    list_of_tables <- model_store(list_of_predictions, list_of_models)
+
+    ## Accumulate the results
+    list_of_bind_tables <- rmonic::bind_lists(list_of_bind_tables, list_of_tables)
+}# foreach-loop
+
+## Post-modelling operations
+list_of_bind_tables <<- list_of_bind_tables # global variable used by model_end
+df_of_bind_tables <- model_end()
+```
+
+---
+
+## Model Outcomes {.tabset .tabset-fade}
+
+Backesting created two variables:
+
+*  `list_of_bind_tables` - the accumulated outcome of *model_store()*, and
+*  `df_of_bind_tables` - the accumulated outcome of *model_end()*.
+
+### model_end input
+
+```{r, echo=FALSE}
+ind_non_empty_tables <- sapply(list_of_bind_tables, nrow) != 0
+num_non_empty_tables <- sum(ind_non_empty_tables)
+name_non_empty_tables <- names(ind_non_empty_tables)[ind_non_empty_tables]
+```
+
+*model_end()*'s input is the accumulated outcome of *model_store()*. It contains
+`r num_non_empty_tables` non empty tables, named: `r paste0(name_non_empty_tables, collapse=", ")`.
+
+```{r, echo = FALSE, out.width = "100%"}
+list_of_bind_tables[["PREDICTIONS_DATA"]] %>% 
+    head(6) %>% 
+    kable(digits = 2, caption = "PREDICTIONS_DATA") %>%  
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                  full_width = TRUE,
+                  font_size = 12,
+                  position = "left")
+
+list_of_bind_tables[["PREDICTIONS_METADATA"]] %>% 
+    head(6) %>% 
+    kable(digits = 2, caption = "PREDICTIONS_METADATA") %>%  
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                  full_width = TRUE,
+                  font_size = 12,
+                  position = "left")
+```
+
+### model_end output
+
+Merging the tables by the "METADATA_UID" key, we get an informative table that
+reports the predictions values and metadata about the prediction process.
+
+```{r, echo = FALSE, out.width = "100%"}
+df_of_bind_tables %>% 
+    head(6) %>% 
+    kable(digits = 2) %>%  
+    kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                              full_width = TRUE,
+                              font_size = 12,
+                              position = "left")
+```
+
+---
+
+## Visualisation {.tabset .tabset-fade}
+
+### Point Range
+
+```{r, echo = FALSE, out.width = "100%"}
+df_of_bind_tables %>% 
+    dplyr::group_by(OBSERVATION_UID, RESPONSE_TYPE) %>% 
+    dplyr::summarise(RESPONSE_VALUE = mean(RESPONSE_VALUE, na.rm = TRUE)) %>% 
+    tidyr::spread(key = "RESPONSE_TYPE", value = "RESPONSE_VALUE") %>% 
+    ggplot(aes(x = OBSERVATION_UID, y = fit, ymin = lwr, ymax = upr)) +
+    ylab("Miles per Gallon") +
+    geom_pointrange() + 
+    coord_flip()
+```
+
+### Box Plot
+
+This plot is useful when bootstrap sampling is employed.
+
+```{r, echo = FALSE, out.width = "100%"}
+df_of_bind_tables %>% 
+    filter(RESPONSE_TYPE %in% "fit") %>% 
+    ggplot(aes(x = OBSERVATION_UID, y = RESPONSE_VALUE)) +
+    ylab("Miles per Gallon") +
+    geom_boxplot() + 
+    coord_flip()
+```
+
+---
