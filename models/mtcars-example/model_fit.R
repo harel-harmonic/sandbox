@@ -65,25 +65,25 @@ model_fit <- function(
     ## (c) Each metadata must be a key-value pair. See details in
     ##     help(compose_model_name).
     ##
-    mdl_mpg_name <- rmonic::compose_model_name(model_uid = model_uid,
+    mdl_name <- rmonic::compose_model_name(model_uid = model_uid,
                                                target_variable = "mpg",
                                                split = split_num) 
-    mdl_mpg_name <- mdl_mpg_name %>% rmonic::standardize_json_strings()
-    
+    # mdl_mpg_name <- mdl_mpg_name %>% rmonic::standardize_json_strings()
+    # jsonlite::toJSON(list(A=1,B=2), auto_unbox = TRUE)
     
     ###############
     ## Fit Model ##
     ###############
-    mdl_mpg_obj <- lm("MPG ~ .", training_set)
+    mdl_obj <- lm("MPG ~ .", training_set)
     
     
     ################################
     ## Store Model in a Flat List ##
     ################################
     # saveToLocalRepo(model, repoDir, userTags = c("my_model", "do not delete"))
-    # attr(x, "tags" ) = c( "name1", "name2" )
-    archivist::saveToLocalRepo(artifact = mdl_mpg_obj)
-    list_of_models[[mdl_mpg_name]] <- mdl_mpg_obj
+    # attr(mdl_mpg_obj, "tags" ) <- c( "name1", "name2" )
+    archivist::saveToLocalRepo(artifact = mdl_obj, userTags = c("my_model", "do not delete"))
+    list_of_models[[mdl_name]] <- mdl_obj
     
     
     ############
