@@ -66,8 +66,8 @@ model_fit <- function(
     ##     help(compose_model_name).
     ##
     mdl_name <- rmonic::compose_model_name(model_uid = model_uid,
-                                               target_variable = "mpg",
-                                               split = split_num) 
+                                           target_variable = "mpg",
+                                           split = split_num) 
     # mdl_mpg_name <- mdl_mpg_name %>% rmonic::standardize_json_strings()
     # jsonlite::toJSON(list(A=1,B=2), auto_unbox = TRUE)
     

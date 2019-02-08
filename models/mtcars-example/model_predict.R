@@ -14,6 +14,24 @@ model_predict <- function(
     ## Here you may add your assertions
     
     
+    ###########################################
+    ## Query the Archive for Relevant Models ##
+    ###########################################
+    ## List the cached models 
+    db_info <- 
+        archivist::showLocalRepo(method = c("md5hashes","tags","sets")[2]) %>% 
+        dplyr::mutate(createdDate = as.POSIXct(createdDate))
+    ## Find the uids of the relevant models for this epoch 
+    tags <- compose_tags(model_uid = model_uid, split = k)
+    uids <- searchInLocalRepo(tags)
+    ## In case there are several versions of the same model, take the latest one
+    db_info <- db_info %>% 
+        dplyr::filter(artifact %in% uids) %>% 
+        dplyr::arrange(desc(createdDate)) %>% 
+        dplyr::group_by(artifact) %>% 
+        dplyr::slice(1)
+    
+    
     ###########
     ## Setup ##
     ###########
@@ -21,7 +39,7 @@ model_predict <- function(
     ### Allocate list for the results
     list_of_predictions <- list()
     ### Get the number of models
-    M <- length(list_of_models)
+    M <- nrow(db_info)
     ### Get the observations UIDs
     uid <- test_set[, unique_key_column]
     ## Here you may add your code
@@ -43,8 +61,11 @@ model_predict <- function(
     ##
     ## Here you may remove/edit/add your code
     for(m in 1:M){
-        ## Extract the fitted model object and name
-        mdl_obj <- list_of_models[[m]]
+        ## Extract the fitted model object
+        model_md5hash <- db_info[1 , "artifact"] %>% as.character()
+        mdl_obj <- archivist::loadFromLocalRepo(model_md5hash, value = TRUE)
+        ## Extract the fitted model name
+        # mdl_obj <- list_of_models[[m]]
         mdl_name <- names(list_of_models)[m]
         
         ## Predict the test data on the m_th model
@@ -68,8 +89,10 @@ model_predict <- function(
                                stringsAsFactors = FALSE)
             ## METADATA: Store the predictions metadata in a valid JSON string
             metadata <- compose_model_name(mdl_name, response_type = colname)
+            attr(data, "tags") <- rmonic::compose_tags(response_type = colname)
             ## Append the predicted values to the list
             list_of_predictions[[metadata]] <- data
+            archivist::saveToLocalRepo(artifact = data)
             
         }# prediction-type for-loop (e.g. "fit", "lwr", "upr")
         
