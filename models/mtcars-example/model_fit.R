@@ -80,9 +80,10 @@ model_fit <- function(
     ################################
     ## Store Model in a Flat List ##
     ################################
-    # saveToLocalRepo(model, repoDir, userTags = c("my_model", "do not delete"))
-    # attr(mdl_mpg_obj, "tags" ) <- c( "name1", "name2" )
-    archivist::saveToLocalRepo(artifact = mdl_obj, userTags = c("my_model", "do not delete"))
+    attr(mdl_obj, "tags") <- rmonic::compose_tags(model_uid = model_uid,
+                                                  target_variable = "mpg",
+                                                  split = split_num)
+    archivist::saveToLocalRepo(artifact = mdl_obj)
     list_of_models[[mdl_name]] <- mdl_obj
     
     
