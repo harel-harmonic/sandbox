@@ -3,19 +3,16 @@ model_end <- function(){
     ## Defensive Programming ##
     ###########################
     ## Here you may add your assertions
-    assertive::assert_all_are_existing(c("model_name", "list_of_bind_tables"),
-                                       envir = .GlobalEnv)
+    assertive::assert_all_are_existing(c("model_name", "slug_model"), envir = .GlobalEnv)
     
     
     #############################################
     ## Join the Predictions and their Metadata ##
     #############################################
-    PREDICTIONS <-
-        rmonic::join_predictions_tables(
-            list_of_bind_tables$PREDICTIONS_DATA,
-            list_of_bind_tables$PREDICTIONS_METADATA
-        )
-    rmonic::assert_objects_have_the_same_number_of_observations(PREDICTIONS, list_of_bind_tables$PREDICTIONS_DATA)
+    query <- rmonic::compose_tags(slug_model)
+    predictions_full_table <<- rmonic::retrieve_table(query) %>% rmonic::standardize_col_names()
+    predictions_long_table <<- predictions_full_table %>% dplyr::select(RESPONSE_TYPE,SPLIT,KEY,VALUE)
+    predictions_wide_table <<- predictions_long_table %>% tidyr::spread(key = RESPONSE_TYPE, value = VALUE)
     
     
     ########################################################################
@@ -32,16 +29,18 @@ model_end <- function(){
     ## * 2nd column contains non-negative prediction values.
     ##
     ## Collapse the table by observation id
-    submission_data <-
-        PREDICTIONS %>%
-        dplyr::group_by(OBSERVATION_UID) %>%
-        dplyr::summarise(RESPONSE_VALUE = median(RESPONSE_VALUE, na.rm = TRUE))
+    submission_data <- 
+        predictions_full_table %>% 
+        dplyr::filter(RESPONSE_TYPE %in% "fit") %>% 
+        dplyr::group_by(KEY) %>% 
+        dplyr::summarise(VALUE = mean(VALUE))
     ## Make a submission
-    submit_predictions(submission_data, model_name)
+    submit_predictions(artifact = submission_data, tags = slug_model)
     
     
     ############
     ## Return ##
     ############
-    return(PREDICTIONS)
+    ## Do not edit this part by hand
+    return(invisible())
 }

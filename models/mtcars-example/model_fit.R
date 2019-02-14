@@ -1,30 +1,21 @@
-model_fit <- function(
-    # A data.frame where samples are in rows and features are in columns.
-    training_set = NULL,
-    # A column name which contains the identifiers of the data.frame rows.
-    unique_key_column = "ROWID",
-    # The model unique identifier. e.g. "u5NAm4bNl5cMIOUXZMQe".
-    # Note: This information is available in config.yml.
-    model_uid)
+model_fit <- function(training_set = NULL)
 {
     ###########################
     ## Defensive Programming ##
     ###########################
     ## Do not edit this part by hand
-    rmonic::check_model_fit_input_arguments(training_set, unique_key_column, model_uid)
+    assertive::assert_has_rows(training_set)
+    assertive::assert_all_are_existing(c("model_uid", "split_num", "unique_key_column"), envir = .GlobalEnv)
     ## Here you may add your assertions
-    assertive::assert_all_are_existing(c("split_num"), envir = .GlobalEnv)
     
     
     ###########
     ## Setup ##
     ###########
-    ## Do not edit this part by hand
-    ### Allocate a list for the results
-    list_of_models <- list()
-    ### Remove the unique key column from the training set (to avoid overfitting)
+    # Remove the unique key column from the training set (to avoid overfitting)
     training_set <- training_set %>% select(-unique_key_column)
-    ## Here you may add your code
+    # Compose the stage tag slug
+    current_stage_tags <- rmonic::compose_tags(slug_model_fit, split = split_num)
     
     
     #########################
@@ -40,6 +31,12 @@ model_fit <- function(
     ## 1. Find a for loop a convenient implementation
     ## 2. Change the order of the aforementioned parts to suit your needs
     ##
+    
+    
+    ###############
+    ## Fit Model ##
+    ###############
+    mdl_obj <- lm("MPG ~ .", training_set)
     
     
     ################################################
@@ -65,31 +62,18 @@ model_fit <- function(
     ## (c) Each metadata must be a key-value pair. See details in
     ##     help(compose_model_name).
     ##
-    mdl_name <- rmonic::compose_model_name(model_uid = model_uid,
-                                           target_variable = "mpg",
-                                           split = split_num) 
-    # mdl_mpg_name <- mdl_mpg_name %>% rmonic::standardize_json_strings()
-    # jsonlite::toJSON(list(A=1,B=2), auto_unbox = TRUE)
-    
-    ###############
-    ## Fit Model ##
-    ###############
-    mdl_obj <- lm("MPG ~ .", training_set)
+    mdl_tags <- rmonic::compose_tags(current_stage_tags, target_variable = "mpg")
     
     
-    ################################
-    ## Store Model in a Flat List ##
-    ################################
-    attr(mdl_obj, "tags") <- rmonic::compose_tags(model_uid = model_uid,
-                                                  target_variable = "mpg",
-                                                  split = split_num)
-    archivist::saveToLocalRepo(artifact = mdl_obj)
-    list_of_models[[mdl_name]] <- mdl_obj
+    #############################
+    ## Store Model in Database ##
+    #############################
+    rmonic::save_artifact(mdl_obj, mdl_tags)
     
     
     ############
     ## Return ##
     ############
     ## Do not edit this part by hand
-    return(list_of_models)
+    return(invisible())
 }
