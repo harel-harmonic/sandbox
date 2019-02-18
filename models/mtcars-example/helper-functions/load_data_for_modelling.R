@@ -4,8 +4,8 @@ load_data_for_modelling <- function(){
     ##################
     ## Import the data
     dataset <- mtcars
-    
-    
+
+
     ########################
     ## Data Preprocessing ##
     ########################
@@ -17,8 +17,8 @@ load_data_for_modelling <- function(){
     ## a unique ID. Named it "ROWID".
     dataset <- dataset %>% tibble::rownames_to_column(var = unique_key_column)
     rownames(dataset) <- NULL
-    
-    
+
+
     ####################
     ## Split the Data ##
     ####################
@@ -26,13 +26,13 @@ load_data_for_modelling <- function(){
     # set.seed(902)
     # rset_obj <- rsample::initial_split(dataset, prop = 0.7)
     ## Option 2: K-fold cross validation
-    set.seed(902)
-    rset_obj <- rsample::vfold_cv(dataset, v = 5)
-    ## Option 3: Bootstrap Sampling
     # set.seed(902)
-    # rset_obj <- rsample::bootstraps(dataset, times = 20)
-    
-    
+    # rset_obj <- rsample::vfold_cv(dataset, v = 5)
+    ## Option 3: Bootstrap Sampling
+    set.seed(902)
+    rset_obj <- rsample::bootstraps(dataset, times = 20)
+
+
     ############
     ## Return ##
     ############

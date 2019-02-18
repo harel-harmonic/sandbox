@@ -44,7 +44,7 @@ submit_predictions <- function(artifact, tags){
     ## Defensive Programming ##
     ###########################
     ## tags
-    # invisible(rmonic::decompose_tags(tags))
+    invisible(rmonic::decompose_tags(tags))
     ## data
     assertive::assert_is_data.frame(artifact)
     stopifnot(ncol(data) == 2)
@@ -54,15 +54,15 @@ submit_predictions <- function(artifact, tags){
     ### 2nd column
     if(artifact[, 2] %>% is.na() %>% any()) stop("The 2nd column contains NA values")
     assertive::assert_all_are_non_negative(artifact[[2]])
-    
-    
-    
+
+
+
     ####################################
     ## Preprocess the Submission Data ##
     ####################################
-    
-    
-    
+
+
+
     #######################
     ## Make a Submission ##
     #######################
@@ -74,8 +74,8 @@ submit_predictions <- function(artifact, tags){
     # artifact <- data
     # tag <- rmonic::compose_model_name(model_uid = metadata[["model_uid"]])
     # create_date <- Sys.time() %>% as.POSIXct() %>% as.character()
-    
-    
+
+
     ############
     ## Return ##
     ############

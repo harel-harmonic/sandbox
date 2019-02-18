@@ -7,8 +7,8 @@ model_fit <- function(training_set = NULL)
     assertive::assert_has_rows(training_set)
     assertive::assert_all_are_existing(c("model_uid", "split_num", "unique_key_column"), envir = .GlobalEnv)
     ## Here you may add your assertions
-    
-    
+
+
     ###########
     ## Setup ##
     ###########
@@ -16,8 +16,8 @@ model_fit <- function(training_set = NULL)
     training_set <- training_set %>% select(-unique_key_column)
     # Compose the stage tag slug
     current_stage_tags <- rmonic::compose_tags(slug_model_fit, split = split_num)
-    
-    
+
+
     #########################
     ## Note for Developers ##
     #########################
@@ -31,14 +31,14 @@ model_fit <- function(training_set = NULL)
     ## 1. Find a for loop a convenient implementation
     ## 2. Change the order of the aforementioned parts to suit your needs
     ##
-    
-    
+
+
     ###############
     ## Fit Model ##
     ###############
     mdl_obj <- lm("MPG ~ .", training_set)
-    
-    
+
+
     ################################################
     ## Composing Metadata for the Model Fit Phase ##
     ################################################
@@ -63,14 +63,14 @@ model_fit <- function(training_set = NULL)
     ##     help(compose_model_name).
     ##
     mdl_tags <- rmonic::compose_tags(current_stage_tags, target_variable = "mpg")
-    
-    
+
+
     #############################
     ## Store Model in Database ##
     #############################
     rmonic::save_artifact(mdl_obj, mdl_tags)
-    
-    
+
+
     ############
     ## Return ##
     ############

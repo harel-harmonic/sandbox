@@ -4,8 +4,8 @@ model_end <- function(){
     ###########################
     ## Here you may add your assertions
     assertive::assert_all_are_existing(c("model_name", "slug_model"), envir = .GlobalEnv)
-    
-    
+
+
     #############################################
     ## Join the Predictions and their Metadata ##
     #############################################
@@ -13,8 +13,8 @@ model_end <- function(){
     predictions_full_table <<- rmonic::retrieve_table(query) %>% rmonic::standardize_col_names()
     predictions_long_table <<- predictions_full_table %>% dplyr::select(RESPONSE_TYPE,SPLIT,KEY,VALUE)
     predictions_wide_table <<- predictions_long_table %>% tidyr::spread(key = RESPONSE_TYPE, value = VALUE)
-    
-    
+
+
     ########################################################################
     ## Upload the Predictions to a Centralised Place for Further Analysis ##
     ########################################################################
@@ -29,15 +29,15 @@ model_end <- function(){
     ## * 2nd column contains non-negative prediction values.
     ##
     ## Collapse the table by observation id
-    submission_data <- 
-        predictions_full_table %>% 
-        dplyr::filter(RESPONSE_TYPE %in% "fit") %>% 
-        dplyr::group_by(KEY) %>% 
+    submission_data <-
+        predictions_full_table %>%
+        dplyr::filter(RESPONSE_TYPE %in% "fit") %>%
+        dplyr::group_by(KEY) %>%
         dplyr::summarise(VALUE = mean(VALUE))
     ## Make a submission
     submit_predictions(artifact = submission_data, tags = slug_model)
-    
-    
+
+
     ############
     ## Return ##
     ############
