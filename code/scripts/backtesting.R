@@ -11,16 +11,7 @@ rmonic::setup()
 ## Configurations ##
 ####################
 ## Define the model's name (must be identical to the model folder's name)
-model_name <- "mtcars-example"
-## Define the dataset's primary key - a column which uniquely identifies each row
-unique_key_column <- "ROWID"
-
-
-####################
-## Load Libraries ##
-####################
-## Load libraries which are not included in "~/requirements.yml"
-library(lubridate)
+model_name <<- "mtcars-example"
 
 
 ################
@@ -48,31 +39,24 @@ K <- rmonic::get_rsample_num_of_splits(rset_obj)
 model_init(model_name)
 
 ## Loop over the dataset batches
-results_list <- list()
+list_of_bind_tables <- list()
 for(k in 1:K) {
+    ## Update global variables
+    split_num <<- k
+
     ## Extract the current training set and test set from the rsample object
     training_set <- rmonic::get_rsample_training_set(rset_obj, k)
     test_set <- rmonic::get_rsample_test_set(rset_obj, k)
 
     ## Fit model(s) to the training set
-    list_of_models <- model_fit(training_set,
-                                unique_key_column = unique_key_column,
-                                model_uid = model_uid,
-                                # Extra input argument for model_fit
-                                split_num = k,
-                                parameters = model_yaml[["parameters"]])
+    model_fit(training_set)
 
     ## Predict the test set
-    list_of_predictions <- model_predict(test_set,
-                                         unique_key_column = unique_key_column,
-                                         list_of_models)
+    model_predict(test_set)
 
     ## Store the results for further analysis
-    list_of_tables <- model_store(list_of_predictions, list_of_models)
-
-    ## Accumulate the results
-    results_list <- rmonic::bind_lists(results_list, list_of_tables)
+    model_store()
 }# foreach-loop
 
 ## Post-modelling operations
-results_df <- model_end(list_of_tables = results_list, model_name = model_name)
+model_end()

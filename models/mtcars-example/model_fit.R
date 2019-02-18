@@ -1,4 +1,4 @@
-model_fit <- function(training_set = NULL)
+model_fit <- function(training_set)
 {
     ###########################
     ## Defensive Programming ##

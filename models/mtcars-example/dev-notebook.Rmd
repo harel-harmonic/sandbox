@@ -133,7 +133,7 @@ model_init <- function(model_name){
 #' @title Fit One or More Models to a Training Set
 #' @param training_set (`data.frame`) A table where samples are in rows and features are in columns.
 # Fit one or more models to the data
-model_fit <- function(training_set = NULL)
+model_fit <- function(training_set)
 {
     ###########################
     ## Defensive Programming ##
@@ -219,7 +219,7 @@ model_fit <- function(training_set = NULL)
 ```{r model_predict}
 #' @title Predict a Test Set Using Archived Models
 #' @param test_set (`data.frame`) A table where samples are in rows and features are in columns.
-model_predict <- function(test_set = NULL)
+model_predict <- function(test_set)
 {
     ###########################
     ## Defensive Programming ##
@@ -423,11 +423,11 @@ load_data_for_modelling <- function(){
     ## Split the Data ##
     ####################
     ## Option 1: Split the data to 70%/30% Training/Test sets
-    set.seed(902)
-    rset_obj <- rsample::initial_split(dataset, prop = 0.7)
-    ## Option 2: K-fold cross validation
     # set.seed(902)
-    # rset_obj <- rsample::vfold_cv(dataset, v = 5)
+    # rset_obj <- rsample::initial_split(dataset, prop = 0.7)
+    ## Option 2: K-fold cross validation
+    set.seed(902)
+    rset_obj <- rsample::vfold_cv(dataset, v = 5)
     ## Option 3: Bootstrap Sampling
     # set.seed(902)
     # rset_obj <- rsample::bootstraps(dataset, times = 20)
@@ -468,8 +468,6 @@ rmonic::setup()
 ####################
 ## Define the model's name (must be identical to the model folder's name)
 model_name <<- "mtcars-example"
-## Define the dataset's primary key - a column which uniquely identifies each row
-# unique_key_column <<- "ROWID"
 
 
 ################

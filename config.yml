@@ -1,0 +1,41 @@
+project_metadata:
+  project_uid: 1OwgIVlfLeke0df0bEsa
+  project_creation_date: 2019-02-18 23:04:31
+  project_name: sandbox
+project_folders:
+  k_path_project: tryCatch(rprojroot::find_rstudio_root_file(),error=function(e)getwd())
+  k_path_code: file.path(k_path_project, "code")
+  k_path_data: file.path(k_path_project, "data")
+  k_path_docs: file.path(k_path_project, "docs")
+  k_path_models: file.path(k_path_project, "models")
+  k_path_functions: file.path(k_path_project, "code", "R")
+  k_path_scripts: file.path(k_path_project, "code", "scripts")
+  k_path_submissions: file.path(k_path_project, "data", "submissions")
+packages:
+  CRAN:
+    archivist: '>= 2.3.2'
+    assertive: '>= 0.3-5'
+    conflicted: ''
+    digest: '>= 0.6.18'
+    dplyr: '>= 0.7.4'
+    foreach: ''
+    fs: '>= 1.2.6'
+    jsonlite: '>= 1.6'
+    kableExtra: ''
+    knitr: ''
+    magrittr: '>= 1.5'
+    purrr: '>= 0.2.5'
+    remotes: '>= 2.0.2'
+    rmarkdown: ''
+    rsample: '>= 0.0.3'
+    stringr: '>= 1.3.1'
+    testthat: ''
+    tibble: '>= 1.4.2'
+    tidyr: '>= 0.8.2'
+    tidyverse: ''
+    whisker: '>= 0.3-2'
+    xts: '>= 0.11-2'
+    yaml: '>= 2.2.0'
+  GitHub:
+    tidyverse/forcats: ''
+    tidyverse/lubridate: ''

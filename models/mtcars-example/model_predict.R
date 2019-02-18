@@ -1,4 +1,4 @@
-model_predict <- function(test_set = NULL)
+model_predict <- function(test_set)
 {
     ###########################
     ## Defensive Programming ##

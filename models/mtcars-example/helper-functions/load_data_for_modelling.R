@@ -26,11 +26,11 @@ load_data_for_modelling <- function(){
     # set.seed(902)
     # rset_obj <- rsample::initial_split(dataset, prop = 0.7)
     ## Option 2: K-fold cross validation
-    # set.seed(902)
-    # rset_obj <- rsample::vfold_cv(dataset, v = 5)
-    ## Option 3: Bootstrap Sampling
     set.seed(902)
-    rset_obj <- rsample::bootstraps(dataset, times = 20)
+    rset_obj <- rsample::vfold_cv(dataset, v = 5)
+    ## Option 3: Bootstrap Sampling
+    # set.seed(902)
+    # rset_obj <- rsample::bootstraps(dataset, times = 20)
 
 
     ############
