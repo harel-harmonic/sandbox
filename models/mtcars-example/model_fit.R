@@ -5,7 +5,9 @@ model_fit <- function(training_set)
     ###########################
     ## Do not edit this part by hand
     assertive::assert_has_rows(training_set)
-    assertive::assert_all_are_existing(c("model_uid", "split_num", "unique_key_column"), envir = .GlobalEnv)
+    assertive::assert_all_are_existing(
+        c("model_uid", "split_num", "unique_key_column", "model_archive"),
+        envir = .GlobalEnv)
     ## Here you may add your assertions
 
 
@@ -36,7 +38,7 @@ model_fit <- function(training_set)
     ###############
     ## Fit Model ##
     ###############
-    mdl_obj <- lm("MPG ~ .", training_set)
+    model_object <- lm("MPG ~ .", training_set)
 
 
     ################################################
@@ -62,13 +64,13 @@ model_fit <- function(training_set)
     ## (c) Each metadata must be a key-value pair. See details in
     ##     help(compose_model_name).
     ##
-    mdl_tags <- rmonic::compose_tags(current_stage_tags, target_variable = "mpg")
+    model_tags <- rmonic::compose_tags(current_stage_tags, target_variable = "mpg")
 
 
     #############################
     ## Store Model in Database ##
     #############################
-    rmonic::save_artifact(mdl_obj, mdl_tags)
+    rmonic::save_artifact(model_object, model_tags, model_archive)
 
 
     ############

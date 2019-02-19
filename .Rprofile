@@ -8,7 +8,7 @@ k_session_uid <- if(k_counter_calls==0) rmonic::rand_strings(1, 10) else k_sessi
 k_path_project <<- tryCatch(rprojroot::find_rstudio_root_file(), error = function(e) getwd())
 paths <- yaml::yaml.load_file(file.path(k_path_project, "config.yml"))[["project_folders"]]
 for(k in 1:length(paths)) assign(names(paths)[k], eval(parse(text = paths[[k]])))
-rm(paths)
+rm(paths, k)
 
 
 

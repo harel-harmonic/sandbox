@@ -15,9 +15,9 @@ model_init <- function(model_name){
     ## Setup ##
     ###########
     ## Initialize the caching engine
-    k_path_model_cache <<- file.path(k_path_models, model_name, "cache")
-    unlink(k_path_model_cache, recursive = TRUE, force = TRUE)
-    archivist::createLocalRepo(k_path_model_cache, force = TRUE, default = TRUE)
+    model_archive <<- file.path(k_path_cache, model_name)
+    unlink(model_archive, recursive = TRUE, force = TRUE)
+    archivist::createLocalRepo(model_archive, force = TRUE, default = TRUE)
     ## Get model's metadata from yaml file and make it available globally
     ## Note: model's metadata may contain parameters to pass into the model
     model_yaml <- rmonic::load_model_metadata(model_name, k_path_models)
@@ -35,9 +35,6 @@ model_init <- function(model_name){
     slug_model_predict <<- compose_tags(slug_model, source = "model_predict")
     ### The sampled data split number
     split_num <<- 0
-    ### The column name which contains the identifiers of the data.frame rows
-    unique_key_column <<- "ROWID"
-
 
 
     ##################

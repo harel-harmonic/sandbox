@@ -1,7 +1,7 @@
 model_metadata:
 # Mandatory Fields
-  model_uid: UsVMyTnqrWHbJq4HCv7X
-  model_creation_date: 2019-02-18 23:08:29 #UTC Time Zone
+  model_uid: RN8Sr8dWeUQuf6Ors7xK
+  model_creation_date: 2019-02-19 01:23:51 #UTC Time Zone
   model_author: harel.l
   model_parent: 
   model_name: mtcars-example
