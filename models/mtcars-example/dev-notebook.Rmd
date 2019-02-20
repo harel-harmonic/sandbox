@@ -319,9 +319,12 @@ model_end <- function(){
     ## Join the Predictions and their Metadata ##
     #############################################
     query <- rmonic::compose_tags(slug_model)
-    predictions_full_table <<- rmonic::retrieve_table(query, model_archive) %>% rmonic::standardize_col_names()
-    predictions_long_table <<- predictions_full_table %>% dplyr::select(RESPONSE_TYPE,SPLIT,KEY,VALUE)
-    predictions_wide_table <<- predictions_long_table %>% tidyr::spread(key = RESPONSE_TYPE, value = VALUE)
+    predictions_full_table <<- 
+        rmonic::retrieve_table(query, model_archive) %>% rmonic::standardize_col_names()
+    predictions_long_table <<- 
+        predictions_full_table %>% dplyr::select(RESPONSE_TYPE,SPLIT,KEY,VALUE)
+    predictions_wide_table <<- 
+        predictions_long_table %>% tidyr::spread(key = RESPONSE_TYPE, value = VALUE)
 
 
     ########################################################################
@@ -541,9 +544,114 @@ table with all the predictions and metadata about the context of their creation.
 This is done by calling *retrieve_table()* with tags that constitute the
 database query.
 
-```
+```{r full_table, echo=TRUE}
 query <- rmonic::compose_tags("model_name" = "mtcars-example")
-predictions_full_table <- rmonic::retrieve_table(query) 
+predictions_full_table <- rmonic::retrieve_table(query, model_archive) 
 ```
 
-Using metadata in the retrieved table, we reshape the table to suit our needs.
+Below are three representations of the retrieved table:
+
+1. **Full Table** is the retrieved table without any change.
+2. **Wide Table** is a custom view that reports the prediction with their
+prediction intervals.
+3. **Submission Table** is the minimal viable (prediction) table. It collapses
+data across attributes, such as *split*, into keys (observations IDS) and values
+(predicted response).
+
+### Full Table
+
+The 'full table' comprises two column groups:
+
+1. **Metadata** contains all the stored tags in the archive which are associated
+with the table query.
+    * In this example, we see that all the *model_metadata* fields in
+    *config.mdl* appear, as we included this information in *slug_model* during
+    [model_init](#model_init). Moreover, the context in which the predictions
+    were made, such as *split* and *response_type*, appears as well.
+    * Many of the columns are redundant, but some are useful. Having them allows
+    us to:
+        * Get to the bottom line. Regardless of the sampling schema, such as
+        bootstrap or k-fold CV, we have sufficient information to summarise and
+        pair prediction values with ids.
+        * Scrutinise the results. There are numerous options to further analyse
+        the results. Two aspects to consider are model-wise and
+        observation-wise (in case bootstrap sampling was employed).
+2. **Data** has the response values. It could sorce from one or more models, and
+it could be one of different prediction types, such as lower/upper prediction
+interval.
+
+```{r, echo = FALSE}
+predictions_full_table %>% 
+    head() %>% 
+    kable(digits = 2) %>% 
+    kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                              full_width = TRUE,
+                              position = "left",
+                              font_size = 9) 
+```
+
+### Wide Table
+
+```{r, echo = FALSE}
+predictions_wide_table <- 
+    predictions_full_table %>% 
+    dplyr::select(response_type, split, KEY, VALUE) %>% 
+    tidyr::spread(key = response_type, value = VALUE)
+
+predictions_wide_table %>% 
+    head(10) %>% 
+    kable(digits = 2) %>% 
+    kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                              full_width = TRUE,
+                              position = "left",
+                              font_size = 12) 
+```
+
+### Submission Table
+
+```{r, echo = FALSE}
+submission_data <-
+    predictions_full_table %>%
+    dplyr::filter(response_type %in% "fit") %>%
+    dplyr::group_by(KEY) %>%
+    dplyr::summarise(VALUE = mean(VALUE))
+
+submission_data %>% 
+    head(10) %>% 
+    kable(digits = 2) %>% 
+    kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                              full_width = FALSE,
+                              position = "left",
+                              font_size = 12) 
+```
+
+## Visualisation {.tabset .tabset-fade}
+
+### Point Range
+
+```{r, echo = FALSE, out.width = "100%"}
+predictions_full_table %>% 
+    dplyr::select(response_type, split, KEY, VALUE) %>% 
+    tidyr::spread(key = response_type, value = VALUE) %>% 
+    dplyr::group_by(KEY) %>% 
+    dplyr::summarise(fit = mean(fit), lwr = mean(lwr), upr = mean(upr)) %>% 
+    ggplot(aes(x = KEY, y = fit, ymin = lwr, ymax = upr)) +
+    ylab("Miles per Gallon") +
+    xlab("Car Model") +
+    geom_pointrange() + 
+    coord_flip()
+```
+
+### Box Plot
+
+This plot is useful when bootstrap sampling is employed.
+
+```{r, echo = FALSE, out.width = "100%"}
+predictions_full_table %>% 
+    filter(response_type %in% "fit") %>% 
+    ggplot(aes(x = KEY, y = VALUE)) +
+    ylab("Miles per Gallon") +
+    xlab("Car Model") +
+    geom_boxplot() + 
+    coord_flip()
+```

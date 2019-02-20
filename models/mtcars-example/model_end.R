@@ -12,9 +12,12 @@ model_end <- function(){
     ## Join the Predictions and their Metadata ##
     #############################################
     query <- rmonic::compose_tags(slug_model)
-    predictions_full_table <<- rmonic::retrieve_table(query, model_archive) %>% rmonic::standardize_col_names()
-    predictions_long_table <<- predictions_full_table %>% dplyr::select(RESPONSE_TYPE,SPLIT,KEY,VALUE)
-    predictions_wide_table <<- predictions_long_table %>% tidyr::spread(key = RESPONSE_TYPE, value = VALUE)
+    predictions_full_table <<- 
+        rmonic::retrieve_table(query, model_archive) %>% rmonic::standardize_col_names()
+    predictions_long_table <<- 
+        predictions_full_table %>% dplyr::select(RESPONSE_TYPE,SPLIT,KEY,VALUE)
+    predictions_wide_table <<- 
+        predictions_long_table %>% tidyr::spread(key = RESPONSE_TYPE, value = VALUE)
 
 
     ########################################################################
