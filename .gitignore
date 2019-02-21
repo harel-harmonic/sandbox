@@ -68,3 +68,4 @@ data/cache/
 !*.Rproj
 !requirements.yml
 .Rproj.user
+data/submissions/

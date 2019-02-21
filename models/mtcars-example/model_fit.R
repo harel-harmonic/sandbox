@@ -9,8 +9,8 @@ model_fit <- function(training_set)
         c("model_uid", "split_num", "unique_key_column", "model_archive"),
         envir = .GlobalEnv)
     ## Here you may add your assertions
-
-
+    
+    
     ###########
     ## Setup ##
     ###########
@@ -18,8 +18,8 @@ model_fit <- function(training_set)
     training_set <- training_set %>% select(-unique_key_column)
     # Compose the stage tag slug
     current_stage_tags <- rmonic::compose_tags(slug_model_fit, split = split_num)
-
-
+    
+    
     #########################
     ## Note for Developers ##
     #########################
@@ -33,14 +33,14 @@ model_fit <- function(training_set)
     ## 1. Find a for loop a convenient implementation
     ## 2. Change the order of the aforementioned parts to suit your needs
     ##
-
-
+    
+    
     ###############
     ## Fit Model ##
     ###############
     model_object <- lm("MPG ~ .", training_set)
-
-
+    
+    
     ################################################
     ## Composing Metadata for the Model Fit Phase ##
     ################################################
@@ -65,14 +65,14 @@ model_fit <- function(training_set)
     ##     help(compose_model_name).
     ##
     model_tags <- rmonic::compose_tags(current_stage_tags, target_variable = "mpg")
-
-
+    
+    
     #############################
     ## Store Model in Database ##
     #############################
     rmonic::save_artifact(model_object, model_tags, model_archive)
-
-
+    
+    
     ############
     ## Return ##
     ############

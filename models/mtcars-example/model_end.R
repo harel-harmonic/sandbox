@@ -6,8 +6,8 @@ model_end <- function(){
     assertive::assert_all_are_existing(
         c("model_name", "slug_model", "model_archive"),
         envir = .GlobalEnv)
-
-
+    
+    
     #############################################
     ## Join the Predictions and their Metadata ##
     #############################################
@@ -18,8 +18,8 @@ model_end <- function(){
         predictions_full_table %>% dplyr::select(RESPONSE_TYPE,SPLIT,KEY,VALUE)
     predictions_wide_table <<- 
         predictions_long_table %>% tidyr::spread(key = RESPONSE_TYPE, value = VALUE)
-
-
+    
+    
     ########################################################################
     ## Upload the Predictions to a Centralised Place for Further Analysis ##
     ########################################################################
@@ -41,8 +41,8 @@ model_end <- function(){
         dplyr::summarise(VALUE = mean(VALUE))
     ## Make a submission
     submit_predictions(artifact = submission_data, tags = slug_model)
-
-
+    
+    
     ############
     ## Return ##
     ############
