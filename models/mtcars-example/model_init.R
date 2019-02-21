@@ -9,8 +9,8 @@ model_init <- function(model_name){
     ## * base::stopifnot() - for conditional statements to ensure code integrity
     ## * if(conditional statements) stop(<failure reason>)
     ## * {assertive} - informative check functions to ensure code integrity
-    
-    
+
+
     ###########
     ## Setup ##
     ###########
@@ -21,8 +21,8 @@ model_init <- function(model_name){
     ## Get model's metadata from yaml file and make it available globally
     ## Note: model's metadata may contain parameters to pass into the model
     model_yaml <- rmonic::load_model_metadata(model_name, k_path_models)
-    
-    
+
+
     ######################
     ## Global Variables ##
     ######################
@@ -35,14 +35,17 @@ model_init <- function(model_name){
     slug_model_predict <<- compose_tags(slug_model, source = "model_predict")
     ### The sampled data split number
     split_num <<- 0
-    
-    
+    ### The iteration number. k = 0, may signal that the model was not executed
+    ### during an iterative process
+    k <<- 0
+
+
     ##################
     ## Calculations ##
     ##################
     ## Here you may add your code
-    
-    
+
+
     ############
     ## Return ##
     ############

@@ -4,8 +4,8 @@ load_data_for_modelling <- function(){
     ##################
     ## Import the data
     dataset <- mtcars
-    
-    
+
+
     ########################
     ## Data Preprocessing ##
     ########################
@@ -17,8 +17,8 @@ load_data_for_modelling <- function(){
     ## a unique ID. Named it "ROWID".
     dataset <- dataset %>% tibble::rownames_to_column(var = unique_key_column)
     rownames(dataset) <- NULL
-    
-    
+
+
     ####################
     ## Split the Data ##
     ####################
@@ -31,8 +31,8 @@ load_data_for_modelling <- function(){
     ## Option 3: Bootstrap Sampling
     # set.seed(902)
     # rset_obj <- rsample::bootstraps(dataset, times = 20)
-    
-    
+
+
     ############
     ## Return ##
     ############

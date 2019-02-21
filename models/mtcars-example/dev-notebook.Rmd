@@ -82,8 +82,8 @@ model_init <- function(model_name){
     ## * base::stopifnot() - for conditional statements to ensure code integrity
     ## * if(conditional statements) stop(<failure reason>)
     ## * {assertive} - informative check functions to ensure code integrity
-    
-    
+
+
     ###########
     ## Setup ##
     ###########
@@ -94,8 +94,8 @@ model_init <- function(model_name){
     ## Get model's metadata from yaml file and make it available globally
     ## Note: model's metadata may contain parameters to pass into the model
     model_yaml <- rmonic::load_model_metadata(model_name, k_path_models)
-    
-    
+
+
     ######################
     ## Global Variables ##
     ######################
@@ -108,14 +108,17 @@ model_init <- function(model_name){
     slug_model_predict <<- compose_tags(slug_model, source = "model_predict")
     ### The sampled data split number
     split_num <<- 0
-    
-    
+    ### The iteration number. k = 0, may signal that the model was not executed
+    ### during an iterative process
+    k <<- 0
+
+
     ##################
     ## Calculations ##
     ##################
     ## Here you may add your code
-    
-    
+
+
     ############
     ## Return ##
     ############
@@ -141,8 +144,8 @@ model_fit <- function(training_set)
         c("model_uid", "split_num", "unique_key_column", "model_archive"),
         envir = .GlobalEnv)
     ## Here you may add your assertions
-    
-    
+
+
     ###########
     ## Setup ##
     ###########
@@ -150,8 +153,8 @@ model_fit <- function(training_set)
     training_set <- training_set %>% select(-unique_key_column)
     # Compose the stage tag slug
     current_stage_tags <- rmonic::compose_tags(slug_model_fit, split = split_num)
-    
-    
+
+
     #########################
     ## Note for Developers ##
     #########################
@@ -165,14 +168,14 @@ model_fit <- function(training_set)
     ## 1. Find a for loop a convenient implementation
     ## 2. Change the order of the aforementioned parts to suit your needs
     ##
-    
-    
+
+
     ###############
     ## Fit Model ##
     ###############
     model_object <- lm("MPG ~ .", training_set)
-    
-    
+
+
     ################################################
     ## Composing Metadata for the Model Fit Phase ##
     ################################################
@@ -197,14 +200,14 @@ model_fit <- function(training_set)
     ##     help(compose_model_name).
     ##
     model_tags <- rmonic::compose_tags(current_stage_tags, target_variable = "mpg")
-    
-    
+
+
     #############################
     ## Store Model in Database ##
     #############################
     rmonic::save_artifact(model_object, model_tags, model_archive)
-    
-    
+
+
     ############
     ## Return ##
     ############
@@ -229,33 +232,33 @@ model_predict <- function(test_set)
         c("model_uid", "split_num", "unique_key_column", "model_archive"),
         envir = .GlobalEnv)
     ## Here you may add your assertions
-    
-    
+
+
     ###########
     ## Setup ##
     ###########
     # Compose stages tag slugs
     previous_stage_tags <- rmonic::compose_tags(slug_model_fit, split = split_num)
     current_stage_tags <- rmonic::compose_tags(slug_model_predict, split = split_num)
-    
-    
+
+
     ###################################
     ## Retrieve the Prediction Model ##
     ###################################
     ## Compose database query for the desiered model
     model_tags <- rmonic::compose_tags(previous_stage_tags, target_variable = "mpg")
-    
+
     ## Retrieve the model
     model_object <- rmonic::load_artifact(model_tags, model_archive)
-    
-    
+
+
     ##########################
     ## Predict the Test Set ##
     ##########################
     response_vars <- predict(model_object, test_set, interval = "predict")
     rmonic::assert_objects_have_the_same_number_of_observations(response_vars, test_set)
-    
-    
+
+
     ###################################
     ## Store Predictions in Database ##
     ###################################
@@ -272,8 +275,8 @@ model_predict <- function(test_set)
     rmonic::save_artifact(y_fit, tags_fit, model_archive)
     rmonic::save_artifact(y_upr, tags_upr, model_archive)
     rmonic::save_artifact(y_lwr, tags_lwr, model_archive)
-    
-    
+
+
     ############
     ## Return ##
     ############
@@ -291,8 +294,8 @@ model_store <- function(){
     ## Defensive Programming ##
     ###########################
     ## Here you may add your assertions
-    
-    
+
+
     ############
     ## Return ##
     ############
@@ -313,20 +316,20 @@ model_end <- function(){
     assertive::assert_all_are_existing(
         c("model_name", "slug_model", "model_archive"),
         envir = .GlobalEnv)
-    
-    
+
+
     #############################################
     ## Join the Predictions and their Metadata ##
     #############################################
     query <- rmonic::compose_tags(slug_model)
-    predictions_full_table <<- 
+    predictions_full_table <-
         rmonic::retrieve_table(query, model_archive) %>% rmonic::standardize_col_names()
-    predictions_long_table <<- 
+    predictions_long_table <-
         predictions_full_table %>% dplyr::select(RESPONSE_TYPE,SPLIT,KEY,VALUE)
-    predictions_wide_table <<- 
+    predictions_wide_table <-
         predictions_long_table %>% tidyr::spread(key = RESPONSE_TYPE, value = VALUE)
-    
-    
+
+
     ########################################################################
     ## Upload the Predictions to a Centralised Place for Further Analysis ##
     ########################################################################
@@ -348,8 +351,8 @@ model_end <- function(){
         dplyr::summarise(VALUE = mean(VALUE))
     ## Make a submission
     submit_predictions(artifact = submission_data, tags = slug_model)
-    
-    
+
+
     ############
     ## Return ##
     ############
@@ -434,8 +437,8 @@ load_data_for_modelling <- function(){
     ##################
     ## Import the data
     dataset <- mtcars
-    
-    
+
+
     ########################
     ## Data Preprocessing ##
     ########################
@@ -447,8 +450,8 @@ load_data_for_modelling <- function(){
     ## a unique ID. Named it "ROWID".
     dataset <- dataset %>% tibble::rownames_to_column(var = unique_key_column)
     rownames(dataset) <- NULL
-    
-    
+
+
     ####################
     ## Split the Data ##
     ####################
@@ -461,8 +464,8 @@ load_data_for_modelling <- function(){
     ## Option 3: Bootstrap Sampling
     # set.seed(902)
     # rset_obj <- rsample::bootstraps(dataset, times = 20)
-    
-    
+
+
     ############
     ## Return ##
     ############
@@ -526,7 +529,7 @@ if(existsFunction("load_data_for_modelling"))
 #'
 submit_predictions <- function(artifact, tags){
     msgs <- "Uploading the predictions for further analysis"
-    
+
     ###########################
     ## Defensive Programming ##
     ###########################
@@ -544,19 +547,21 @@ submit_predictions <- function(artifact, tags){
     ### 2nd column and forward
     if(artifact %>% select(-1) %>% is.na() %>% any()) stop("The 2nd column contains NA values")
     assertive::assert_all_are_non_negative(artifact %>% select(-1) %>% as.matrix())
-    
-    
+
+
     ####################################
     ## Preprocess the Submission Data ##
     ####################################
     NULL
-    
-    
+
+
     #######################
     ## Make a Submission ##
     #######################
     if(rmonic::is_artifact_in_archive(artifact, k_path_submissions)){
-        msg <- "\033[46mSubmission Skipped\033[49m. An identical submission was found in the archive."
+        msg <- "\033[46mSubmission Skipped\033[49m"
+        msg <- c(msg, "An identical submission was found in the archive.")
+
     } else {
         msg <- tryCatch({
             rmonic::save_artifact(artifact, tags, k_path_submissions)
@@ -567,8 +572,8 @@ submit_predictions <- function(artifact, tags){
         }) # end tryCatch
     }# end if-else
     msgs <- c(msgs, msg)
-    
-    
+
+
     ############
     ## Return ##
     ############
@@ -635,17 +640,17 @@ list_of_bind_tables <- list()
 for(k in 1:K) {
     ## Update global variables
     split_num <<- k
-    
+
     ## Extract the current training set and test set from the rsample object
     training_set <- rmonic::get_rsample_training_set(rset_obj, k)
     test_set <- rmonic::get_rsample_test_set(rset_obj, k)
-    
+
     ## Fit model(s) to the training set
     model_fit(training_set)
-    
+
     ## Predict the test set
     model_predict(test_set)
-    
+
     ## Store the results for further analysis
     model_store()
 }# foreach-loop

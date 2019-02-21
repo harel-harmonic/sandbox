@@ -9,33 +9,33 @@ model_predict <- function(test_set)
         c("model_uid", "split_num", "unique_key_column", "model_archive"),
         envir = .GlobalEnv)
     ## Here you may add your assertions
-    
-    
+
+
     ###########
     ## Setup ##
     ###########
     # Compose stages tag slugs
     previous_stage_tags <- rmonic::compose_tags(slug_model_fit, split = split_num)
     current_stage_tags <- rmonic::compose_tags(slug_model_predict, split = split_num)
-    
-    
+
+
     ###################################
     ## Retrieve the Prediction Model ##
     ###################################
     ## Compose database query for the desiered model
     model_tags <- rmonic::compose_tags(previous_stage_tags, target_variable = "mpg")
-    
+
     ## Retrieve the model
     model_object <- rmonic::load_artifact(model_tags, model_archive)
-    
-    
+
+
     ##########################
     ## Predict the Test Set ##
     ##########################
     response_vars <- predict(model_object, test_set, interval = "predict")
     rmonic::assert_objects_have_the_same_number_of_observations(response_vars, test_set)
-    
-    
+
+
     ###################################
     ## Store Predictions in Database ##
     ###################################
@@ -52,8 +52,8 @@ model_predict <- function(test_set)
     rmonic::save_artifact(y_fit, tags_fit, model_archive)
     rmonic::save_artifact(y_upr, tags_upr, model_archive)
     rmonic::save_artifact(y_lwr, tags_lwr, model_archive)
-    
-    
+
+
     ############
     ## Return ##
     ############
