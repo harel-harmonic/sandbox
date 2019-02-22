@@ -21,6 +21,8 @@ model_init <- function(model_name){
     ## Get model's metadata from yaml file and make it available globally
     ## Note: model's metadata may contain parameters to pass into the model
     model_yaml <- rmonic::load_model_metadata(model_name, k_path_models)
+    ## Load specific packages, which are not declared on a project level
+    rmonic::load_packages(file.path(k_path_models, model_name, "config.yml"))
 
 
     ######################
@@ -33,11 +35,10 @@ model_init <- function(model_name){
     slug_model <<- compose_tags(model_yaml[["model_metadata"]])
     slug_model_fit <<- compose_tags(slug_model, source = "model_fit")
     slug_model_predict <<- compose_tags(slug_model, source = "model_predict")
-    ### The sampled data split number
+    ### The sampled data split number. split_num = 0, may signal that the model
+    ### was not executed under a data partition schema, such as K-fold CV or
+    ### bootstrap.
     split_num <<- 0
-    ### The iteration number. k = 0, may signal that the model was not executed
-    ### during an iterative process
-    k <<- 0
 
 
     ##################

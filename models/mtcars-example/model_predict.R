@@ -6,7 +6,7 @@ model_predict <- function(test_set)
     ## Do not edit this part by hand
     assertive::assert_has_rows(test_set)
     assertive::assert_all_are_existing(
-        c("model_uid", "split_num", "unique_key_column", "model_archive"),
+        c("model_uid", "split_num", "dataset_key_column", "model_archive"),
         envir = .GlobalEnv)
     ## Here you may add your assertions
 
@@ -40,7 +40,7 @@ model_predict <- function(test_set)
     ## Store Predictions in Database ##
     ###################################
     ## Structure the prediction data in a key-value table
-    uids <- test_set[,unique_key_column]
+    uids <- test_set[,dataset_key_column]
     y_fit <- rmonic::kv_table(key = uids, value = response_vars[,"fit"])
     y_upr <- rmonic::kv_table(key = uids, value = response_vars[,"upr"])
     y_lwr <- rmonic::kv_table(key = uids, value = response_vars[,"lwr"])

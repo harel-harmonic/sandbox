@@ -54,8 +54,9 @@ rsconnect/
 # Automated script
 code/scripts/ctrl+shift+w.R
 
-# Cache floder
+# Data folders
 data/cache/
+data/submissions/
 
 # Package manager folder
 .checkpoint/
@@ -67,5 +68,3 @@ data/cache/
 !.Rprofile
 !*.Rproj
 !requirements.yml
-.Rproj.user
-data/submissions/

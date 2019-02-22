@@ -6,7 +6,7 @@ model_fit <- function(training_set)
     ## Do not edit this part by hand
     assertive::assert_has_rows(training_set)
     assertive::assert_all_are_existing(
-        c("model_uid", "split_num", "unique_key_column", "model_archive"),
+        c("model_uid", "split_num", "dataset_key_column", "model_archive"),
         envir = .GlobalEnv)
     ## Here you may add your assertions
 
@@ -15,7 +15,7 @@ model_fit <- function(training_set)
     ## Setup ##
     ###########
     # Remove the unique key column from the training set (to avoid overfitting)
-    training_set <- training_set %>% select(-unique_key_column)
+    training_set <- training_set %>% select(-dataset_key_column)
     # Compose the stage tag slug
     current_stage_tags <- rmonic::compose_tags(slug_model_fit, split = split_num)
 

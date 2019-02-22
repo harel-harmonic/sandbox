@@ -1,21 +1,25 @@
 load_data_for_modelling <- function(){
+    ###########################
+    ## Defensive Programming ##
+    ###########################
+    assertive::assert_all_are_existing(
+        c("dataset_name", "dataset_key_column"),
+        envir = .GlobalEnv)
+
+
     ##################
     ## Get the Data ##
     ##################
     ## Import the data
-    dataset <- mtcars
-
-
+    dataset <- get(dataset_name)
     ########################
     ## Data Preprocessing ##
     ########################
     ## Standardise column names
     dataset <- dataset %>% rmonic::standardize_col_names()
-    ## Set the unique key column
-    unique_key_column <- "ROWID"
     ## Add a unique identifier such that each observation (row) is associated with
-    ## a unique ID. Named it "ROWID".
-    dataset <- dataset %>% tibble::rownames_to_column(var = unique_key_column)
+    ## a unique ID. Named it in accordance with dataset_key_column.
+    dataset <- dataset %>% tibble::rownames_to_column(var = dataset_key_column)
     rownames(dataset) <- NULL
 
 

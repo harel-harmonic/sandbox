@@ -1,5 +1,5 @@
 submit_predictions <- function(artifact, tags){
-    msgs <- "Uploading the predictions for further analysis"
+    msgs <- "Uploading the predictions for further analysis..."
 
     ###########################
     ## Defensive Programming ##

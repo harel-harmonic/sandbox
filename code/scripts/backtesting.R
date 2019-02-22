@@ -12,8 +12,6 @@ rmonic::setup()
 ####################
 ## Define the model's name (must be identical to the model folder's name)
 model_name <<- "mtcars-example"
-### The column name which contains the identifiers of the data.frame rows
-unique_key_column <<- "ROWID"
 
 
 ################
@@ -28,6 +26,10 @@ rmonic::load_model_helper_functions(model_name, k_path_models)
 #############################
 ## Load Data for Modelling ##
 #############################
+## Extract the data source details into global environment
+model_yaml <- rmonic::load_model_metadata(model_name, k_path_models)
+list2env(model_yaml[["data_source"]], envir = .GlobalEnv)
+## Get the data
 rset_obj <- load_data_for_modelling()
 
 

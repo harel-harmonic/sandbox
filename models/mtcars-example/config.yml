@@ -1,9 +1,17 @@
+# Mandatory Fields (auto-generated)
 model_metadata:
-# Mandatory Fields
-  model_uid: RN8Sr8dWeUQuf6Ors7xK
-  model_creation_date: 2019-02-19 01:23:51 #UTC Time Zone
+  model_uid: 1L2IoumkZf4VonGRdh3C
+  model_creation_date: 2019-02-22 01:27:32 #UTC Time Zone
   model_author: harel.l
   model_parent: 
   model_name: mtcars-example
+# Mandatory Fields (manually-defined)
+data_source:
+  dataset_name: mtcars
+  dataset_key_column: ROWID
 # Optional Fields
 parameters: 
+# Specific packages, which are not declared on a project level
+packages:
+  CRAN:
+    stats: '>= 3.3.0' # required for the linear model (just an example)

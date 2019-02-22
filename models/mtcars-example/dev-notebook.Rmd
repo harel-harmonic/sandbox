@@ -94,6 +94,8 @@ model_init <- function(model_name){
     ## Get model's metadata from yaml file and make it available globally
     ## Note: model's metadata may contain parameters to pass into the model
     model_yaml <- rmonic::load_model_metadata(model_name, k_path_models)
+    ## Load specific packages, which are not declared on a project level
+    rmonic::load_packages(file.path(k_path_models, model_name, "config.yml"))
 
 
     ######################
@@ -106,11 +108,10 @@ model_init <- function(model_name){
     slug_model <<- compose_tags(model_yaml[["model_metadata"]])
     slug_model_fit <<- compose_tags(slug_model, source = "model_fit")
     slug_model_predict <<- compose_tags(slug_model, source = "model_predict")
-    ### The sampled data split number
+    ### The sampled data split number. split_num = 0, may signal that the model
+    ### was not executed under a data partition schema, such as K-fold CV or
+    ### bootstrap.
     split_num <<- 0
-    ### The iteration number. k = 0, may signal that the model was not executed
-    ### during an iterative process
-    k <<- 0
 
 
     ##################
@@ -141,7 +142,7 @@ model_fit <- function(training_set)
     ## Do not edit this part by hand
     assertive::assert_has_rows(training_set)
     assertive::assert_all_are_existing(
-        c("model_uid", "split_num", "unique_key_column", "model_archive"),
+        c("model_uid", "split_num", "dataset_key_column", "model_archive"),
         envir = .GlobalEnv)
     ## Here you may add your assertions
 
@@ -150,7 +151,7 @@ model_fit <- function(training_set)
     ## Setup ##
     ###########
     # Remove the unique key column from the training set (to avoid overfitting)
-    training_set <- training_set %>% select(-unique_key_column)
+    training_set <- training_set %>% select(-dataset_key_column)
     # Compose the stage tag slug
     current_stage_tags <- rmonic::compose_tags(slug_model_fit, split = split_num)
 
@@ -229,7 +230,7 @@ model_predict <- function(test_set)
     ## Do not edit this part by hand
     assertive::assert_has_rows(test_set)
     assertive::assert_all_are_existing(
-        c("model_uid", "split_num", "unique_key_column", "model_archive"),
+        c("model_uid", "split_num", "dataset_key_column", "model_archive"),
         envir = .GlobalEnv)
     ## Here you may add your assertions
 
@@ -263,7 +264,7 @@ model_predict <- function(test_set)
     ## Store Predictions in Database ##
     ###################################
     ## Structure the prediction data in a key-value table
-    uids <- test_set[,unique_key_column]
+    uids <- test_set[,dataset_key_column]
     y_fit <- rmonic::kv_table(key = uids, value = response_vars[,"fit"])
     y_upr <- rmonic::kv_table(key = uids, value = response_vars[,"upr"])
     y_lwr <- rmonic::kv_table(key = uids, value = response_vars[,"lwr"])
@@ -432,23 +433,27 @@ For the completeness of the mtcars example, we provide two scripts under the
 #' @return An object created by \code{rsample}.
 #'
 load_data_for_modelling <- function(){
+    ###########################
+    ## Defensive Programming ##
+    ###########################
+    assertive::assert_all_are_existing(
+        c("dataset_name", "dataset_key_column"),
+        envir = .GlobalEnv)
+
+
     ##################
     ## Get the Data ##
     ##################
     ## Import the data
-    dataset <- mtcars
-
-
+    dataset <- get(dataset_name)
     ########################
     ## Data Preprocessing ##
     ########################
     ## Standardise column names
     dataset <- dataset %>% rmonic::standardize_col_names()
-    ## Set the unique key column
-    unique_key_column <- "ROWID"
     ## Add a unique identifier such that each observation (row) is associated with
-    ## a unique ID. Named it "ROWID".
-    dataset <- dataset %>% tibble::rownames_to_column(var = unique_key_column)
+    ## a unique ID. Named it in accordance with dataset_key_column.
+    dataset <- dataset %>% tibble::rownames_to_column(var = dataset_key_column)
     rownames(dataset) <- NULL
 
 
@@ -528,7 +533,7 @@ if(existsFunction("load_data_for_modelling"))
 #' @return NULL
 #'
 submit_predictions <- function(artifact, tags){
-    msgs <- "Uploading the predictions for further analysis"
+    msgs <- "Uploading the predictions for further analysis..."
 
     ###########################
     ## Defensive Programming ##
@@ -607,8 +612,6 @@ rmonic::setup()
 ####################
 ## Define the model's name (must be identical to the model folder's name)
 model_name <<- "mtcars-example"
-### The column name which contains the identifiers of the data.frame rows
-unique_key_column <<- "ROWID"
 
 
 ################
@@ -623,6 +626,10 @@ rmonic::load_model_helper_functions(model_name, k_path_models)
 #############################
 ## Load Data for Modelling ##
 #############################
+## Extract the data source details into global environment
+model_yaml <- rmonic::load_model_metadata(model_name, k_path_models)
+list2env(model_yaml[["data_source"]], envir = .GlobalEnv)
+## Get the data
 rset_obj <- load_data_for_modelling()
 
 
