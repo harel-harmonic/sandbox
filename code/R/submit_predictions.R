@@ -14,7 +14,7 @@
 #'
 #' * 2nd column, named VALUE, contains the predictions values.
 #'
-#' @param tags (`character`) A character vector with Tags. Each tag is a key-value pair in the following format "key:value". These Tags will be added to the repository along with the artifact. Tags can be easily assembled by \code{\link{compose_tags}}).
+#' @param tags (`character`) A character vector with Tags. Each tag is a key-value pair in the following format "key:value". These Tags will be added to the repository along with the artifact. Tags can be easily assembled by \code{\link[rmonic]{compose_tags}}).
 #'
 #' @details This function is customised and defined by the product owner. Its
 #'   programming logic is as follow:
@@ -39,6 +39,8 @@
 #'
 #' @return NULL
 #'
+#' @export
+#'
 submit_predictions <- function(artifact, tags){
     msgs <- "Uploading the predictions for further analysis..."
 
@@ -52,13 +54,12 @@ submit_predictions <- function(artifact, tags){
     invisible(rmonic::decompose_tags(tags))
     ## Check if artifact is a valid dataset
     assertive::assert_is_data.frame(artifact)
-    stopifnot(ncol(data) == 2)
     ### 1st column
-    if(artifact %>% select(+1) %>% is.na() %>% any()) stop("The 1st column contains NA values")
-    assertive::assert_has_no_duplicates(artifact %>% select(+1))
+    if(artifact %>% dplyr::select(+1) %>% is.na() %>% any()) stop("The 1st column contains NA values")
+    assertive::assert_has_no_duplicates(artifact %>% dplyr::select(+1))
     ### 2nd column and forward
-    if(artifact %>% select(-1) %>% is.na() %>% any()) stop("The 2nd column contains NA values")
-    assertive::assert_all_are_non_negative(artifact %>% select(-1) %>% as.matrix())
+    if(artifact %>% dplyr::select(-1) %>% is.na() %>% any()) stop("The 2nd column contains NA values")
+    assertive::assert_all_are_non_negative(artifact %>% dplyr::select(-1) %>% as.matrix())
 
 
     ####################################

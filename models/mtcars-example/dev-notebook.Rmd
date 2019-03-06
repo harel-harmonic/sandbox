@@ -70,7 +70,8 @@ c. Run `model_store()` - Store the process iteration/epoch results
 ### model_init {#model_init}
 
 ```{r model_init}
-# Prepare everything the prediction model needs
+#' @title Prepare everything the prediction model needs
+#' @param model_name The model name (must be identical to the model folder name).
 model_init <- function(model_name){
     ###########################
     ## Defensive Programming ##
@@ -87,31 +88,39 @@ model_init <- function(model_name){
     ###########
     ## Setup ##
     ###########
+    ## Load model helper functions
+    rmonic::load_model_helper_functions(model_name)
     ## Initialize the caching engine
     model_archive <<- file.path(k_path_cache, model_name)
     unlink(model_archive, recursive = TRUE, force = TRUE)
-    archivist::createLocalRepo(model_archive, force = TRUE, default = TRUE)
+    rmonic::create_archive(path = model_archive)
     ## Get model's metadata from yaml file and make it available globally
     ## Note: model's metadata may contain parameters to pass into the model
-    model_yaml <- rmonic::load_model_metadata(model_name, k_path_models)
-    ## Load specific packages, which are not declared on a project level
-    rmonic::load_packages(file.path(k_path_models, model_name, "config.yml"))
+    model_config <- rmonic::load_model_config(model_name, k_path_models)
 
 
     ######################
     ## Global Variables ##
     ######################
     ## Add model metadata parameters to the global environment
-    list2env(model_yaml[["model_metadata"]], envir = .GlobalEnv)
+    rmonic::list_to_env(model_config[["model_metadata"]])
+    ## Add input metadata parameters to the global environment
+    rmonic::list_to_env(model_config[["data_source"]])
     ## Other important variables
     ### Generate slug tags from the model metadata
-    slug_model <<- compose_tags(model_yaml[["model_metadata"]])
+    slug_model <<- compose_tags(model_uid = model_config[["model_metadata"]]$model_uid)
     slug_model_fit <<- compose_tags(slug_model, source = "model_fit")
     slug_model_predict <<- compose_tags(slug_model, source = "model_predict")
     ### The sampled data split number. split_num = 0, may signal that the model
     ### was not executed under a data partition schema, such as K-fold CV or
     ### bootstrap.
     split_num <<- 0
+
+
+    ###################
+    ## Data Pipeline ##
+    ###################
+    ## Here you may add your code
 
 
     ##################
@@ -133,7 +142,6 @@ model_init <- function(model_name){
 ```{r model_fit}
 #' @title Fit One or More Models to a Training Set
 #' @param training_set (`data.frame`) A table where samples are in rows and features are in columns.
-# Fit one or more models to the data
 model_fit <- function(training_set)
 {
     ###########################
@@ -142,7 +150,7 @@ model_fit <- function(training_set)
     ## Do not edit this part by hand
     assertive::assert_has_rows(training_set)
     assertive::assert_all_are_existing(
-        c("model_uid", "split_num", "dataset_key_column", "model_archive"),
+        c("slug_model_fit", "split_num", "dataset_key_column", "model_archive"),
         envir = .GlobalEnv)
     ## Here you may add your assertions
 
@@ -289,7 +297,9 @@ model_predict <- function(test_set)
 ### model_store {#model_store}
 
 ```{r model_store}
-# Log the results (predictions and model objects) in a concise and consistent manner
+#' @title Log the Results
+#' @description Log the results (predictions and model objects) in a concise and
+#'   consistent manner.
 model_store <- function(){
     ###########################
     ## Defensive Programming ##
@@ -430,6 +440,10 @@ For the completeness of the mtcars example, we provide two scripts under the
 #'   (i.e. \code{k_path_functions}).
 #' }
 #'
+#' @importFrom magrittr %>%
+#'
+#' @export
+#'
 #' @return An object created by \code{rsample}.
 #'
 load_data_for_modelling <- function(){
@@ -507,7 +521,7 @@ if(existsFunction("load_data_for_modelling"))
 #'
 #' * 2nd column, named VALUE, contains the predictions values.
 #'
-#' @param tags (`character`) A character vector with Tags. Each tag is a key-value pair in the following format "key:value". These Tags will be added to the repository along with the artifact. Tags can be easily assembled by \code{\link{compose_tags}}).
+#' @param tags (`character`) A character vector with Tags. Each tag is a key-value pair in the following format "key:value". These Tags will be added to the repository along with the artifact. Tags can be easily assembled by \code{\link[rmonic]{compose_tags}}).
 #'
 #' @details This function is customised and defined by the product owner. Its
 #'   programming logic is as follow:
@@ -532,6 +546,8 @@ if(existsFunction("load_data_for_modelling"))
 #'
 #' @return NULL
 #'
+#' @export
+#'
 submit_predictions <- function(artifact, tags){
     msgs <- "Uploading the predictions for further analysis..."
 
@@ -545,13 +561,12 @@ submit_predictions <- function(artifact, tags){
     invisible(rmonic::decompose_tags(tags))
     ## Check if artifact is a valid dataset
     assertive::assert_is_data.frame(artifact)
-    stopifnot(ncol(data) == 2)
     ### 1st column
-    if(artifact %>% select(+1) %>% is.na() %>% any()) stop("The 1st column contains NA values")
-    assertive::assert_has_no_duplicates(artifact %>% select(+1))
+    if(artifact %>% dplyr::select(+1) %>% is.na() %>% any()) stop("The 1st column contains NA values")
+    assertive::assert_has_no_duplicates(artifact %>% dplyr::select(+1))
     ### 2nd column and forward
-    if(artifact %>% select(-1) %>% is.na() %>% any()) stop("The 2nd column contains NA values")
-    assertive::assert_all_are_non_negative(artifact %>% select(-1) %>% as.matrix())
+    if(artifact %>% dplyr::select(-1) %>% is.na() %>% any()) stop("The 2nd column contains NA values")
+    assertive::assert_all_are_non_negative(artifact %>% dplyr::select(-1) %>% as.matrix())
 
 
     ####################################
@@ -605,13 +620,7 @@ if(existsFunction("submit_predictions"))
 #' Researching and backtesting is like drinking and driving.
 #' Do not research under the influence of a backtest.
 rmonic::setup()
-
-
-####################
-## Configurations ##
-####################
-## Define the model's name (must be identical to the model folder's name)
-model_name <<- "mtcars-example"
+rmonic::list_to_env(yaml::read_yaml(file.path(k_path_scripts, "backtesting.yml")))
 
 
 ################
@@ -619,16 +628,14 @@ model_name <<- "mtcars-example"
 ################
 ## Load model_init, model_fit, model_store, model_end located in model folder
 rmonic::load_model_components(model_name, k_path_models)
-## Load model helper functions located in model folder under helper-functions
-rmonic::load_model_helper_functions(model_name, k_path_models)
 
 
 #############################
 ## Load Data for Modelling ##
 #############################
 ## Extract the data source details into global environment
-model_yaml <- rmonic::load_model_metadata(model_name, k_path_models)
-list2env(model_yaml[["data_source"]], envir = .GlobalEnv)
+model_config <- rmonic::load_model_config(model_name, k_path_models)
+rmonic::list_to_env(model_config[["data_source"]], smart_parsing = TRUE)
 ## Get the data
 rset_obj <- load_data_for_modelling()
 
@@ -642,8 +649,7 @@ K <- rmonic::get_rsample_num_of_splits(rset_obj)
 ## Prepare everything our model needs
 model_init(model_name)
 
-## Loop over the dataset batches
-list_of_bind_tables <- list()
+## Loop over the dataset splits
 for(k in 1:K) {
     ## Update global variables
     split_num <<- k
@@ -681,8 +687,9 @@ This is done by calling *retrieve_table()* with tags that constitute the
 database query.
 
 ```{r full_table, echo=TRUE}
-query <- rmonic::compose_tags("model_name" = "mtcars-example")
-predictions_full_table <- rmonic::retrieve_table(query, model_archive) 
+rmonic::list_to_env(yaml::read_yaml(file.path(k_path_mtcars, "config.yml")))
+query <- rmonic::compose_tags("model_uid" = model_config[["model_metadata"]]$model_uid)
+predictions_full_table <- rmonic::retrieve_table(tags = query, path = model_archive) 
 ```
 
 Below are three representations of the retrieved table:

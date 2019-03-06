@@ -6,7 +6,7 @@ model_fit <- function(training_set)
     ## Do not edit this part by hand
     assertive::assert_has_rows(training_set)
     assertive::assert_all_are_existing(
-        c("model_uid", "split_num", "dataset_key_column", "model_archive"),
+        c("slug_model_fit", "split_num", "dataset_key_column", "model_archive"),
         envir = .GlobalEnv)
     ## Here you may add your assertions
 

@@ -1,0 +1,4 @@
+## Define the model's name (must be identical to the model folder's name)
+model_name: mtcars-example
+## Define the number of splits
+n_splits: 10

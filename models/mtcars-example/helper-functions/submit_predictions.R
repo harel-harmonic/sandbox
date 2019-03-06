@@ -11,13 +11,12 @@ submit_predictions <- function(artifact, tags){
     invisible(rmonic::decompose_tags(tags))
     ## Check if artifact is a valid dataset
     assertive::assert_is_data.frame(artifact)
-    stopifnot(ncol(data) == 2)
     ### 1st column
-    if(artifact %>% select(+1) %>% is.na() %>% any()) stop("The 1st column contains NA values")
-    assertive::assert_has_no_duplicates(artifact %>% select(+1))
+    if(artifact %>% dplyr::select(+1) %>% is.na() %>% any()) stop("The 1st column contains NA values")
+    assertive::assert_has_no_duplicates(artifact %>% dplyr::select(+1))
     ### 2nd column and forward
-    if(artifact %>% select(-1) %>% is.na() %>% any()) stop("The 2nd column contains NA values")
-    assertive::assert_all_are_non_negative(artifact %>% select(-1) %>% as.matrix())
+    if(artifact %>% dplyr::select(-1) %>% is.na() %>% any()) stop("The 2nd column contains NA values")
+    assertive::assert_all_are_non_negative(artifact %>% dplyr::select(-1) %>% as.matrix())
 
 
     ####################################

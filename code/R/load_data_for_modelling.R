@@ -22,6 +22,10 @@
 #'   (i.e. \code{k_path_functions}).
 #' }
 #'
+#' @importFrom magrittr %>%
+#'
+#' @export
+#'
 #' @return An object created by \code{rsample}.
 #'
 load_data_for_modelling <- function(){

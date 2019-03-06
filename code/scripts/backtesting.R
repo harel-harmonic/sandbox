@@ -5,13 +5,7 @@
 #' Researching and backtesting is like drinking and driving.
 #' Do not research under the influence of a backtest.
 rmonic::setup()
-
-
-####################
-## Configurations ##
-####################
-## Define the model's name (must be identical to the model folder's name)
-model_name <<- "mtcars-example"
+rmonic::list_to_env(yaml::read_yaml(file.path(k_path_scripts, "backtesting.yml")))
 
 
 ################
@@ -19,16 +13,14 @@ model_name <<- "mtcars-example"
 ################
 ## Load model_init, model_fit, model_store, model_end located in model folder
 rmonic::load_model_components(model_name, k_path_models)
-## Load model helper functions located in model folder under helper-functions
-rmonic::load_model_helper_functions(model_name, k_path_models)
 
 
 #############################
 ## Load Data for Modelling ##
 #############################
 ## Extract the data source details into global environment
-model_yaml <- rmonic::load_model_metadata(model_name, k_path_models)
-list2env(model_yaml[["data_source"]], envir = .GlobalEnv)
+model_config <- rmonic::load_model_config(model_name, k_path_models)
+rmonic::list_to_env(model_config[["data_source"]], smart_parsing = TRUE)
 ## Get the data
 rset_obj <- load_data_for_modelling()
 
@@ -42,8 +34,7 @@ K <- rmonic::get_rsample_num_of_splits(rset_obj)
 ## Prepare everything our model needs
 model_init(model_name)
 
-## Loop over the dataset batches
-list_of_bind_tables <- list()
+## Loop over the dataset splits
 for(k in 1:K) {
     ## Update global variables
     split_num <<- k
