@@ -37,7 +37,7 @@ model_init(model_name)
 ## Loop over the dataset splits
 for(k in 1:K) {
     ## Update global variables
-    split_num <<- k
+    do.call(function(k) split_num <<- k, list(k = k), envir = .GlobalEnv)
 
     ## Extract the current training set and test set from the rsample object
     training_set <- rmonic::get_rsample_training_set(rset_obj, k)

@@ -12,7 +12,7 @@ output:
 ```{r setup, include = FALSE, message = FALSE, results = 'hide', echo = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 model_name <- "mtcars-example"
-k_path_project <- rprojroot::find_rstudio_root_file()
+k_path_project <- tryCatch(rprojroot::find_rstudio_root_file(), error = function(e) getwd())
 k_path_models <- file.path(k_path_project, "models")
 k_path_mtcars <- file.path(k_path_models, model_name)
 library(kableExtra)
@@ -652,7 +652,7 @@ model_init(model_name)
 ## Loop over the dataset splits
 for(k in 1:K) {
     ## Update global variables
-    split_num <<- k
+    do.call(function(k) split_num <<- k, list(k = k), envir = .GlobalEnv)
 
     ## Extract the current training set and test set from the rsample object
     training_set <- rmonic::get_rsample_training_set(rset_obj, k)
