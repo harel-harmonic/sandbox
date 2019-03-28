@@ -2,9 +2,8 @@
 model_name: cmtcars-example
 ## Sampling technique levers
 ### Define the number of splits
-n_splits: 8
+n_splits: 1
 ### Define the number of observations in each split
-n_observations: Inf # insert `Inf` if it doesn't matter
+n_observations: 100 # insert `Inf` if it doesn't matter
 ## Should a parallel back-end be loaded and available?
-allow_parallel: yes
-
+allow_parallel: no

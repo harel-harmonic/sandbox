@@ -1,3 +1,33 @@
+#' @title Load Data for Modelling
+#'
+#' @description load_data_for_modelling provides the data for the modelling
+#'   stage.
+#'
+#' @details \code{rmonic} focal point is on the modelling process. Yet, to
+#'   proceed with the modelling phase, a prior phase of preparing data for
+#'   modelling is needed.
+#'
+#'   The data and the programming logic varies from one project to another.
+#'   Therefore, it is not possible to generalize it to work
+#'   out-of-the-rmonic-box. Instead, it is up to the product-owner/team-leader
+#'   to define its content.
+#'
+#' @note: Using this function is one way of enabling the project data source for
+#' modelling. In case you choose to use the function, here are some good
+#' practices to increase reproducibility:
+#'
+#' \enumerate{
+#'   \item Return an object created by \code{rsample}.
+#'   \item Store the function in the project's shared function folder
+#'   (i.e. \code{k_path_functions}).
+#' }
+#'
+#' @importFrom magrittr %>%
+#'
+#' @export
+#'
+#' @return An object created by \code{rsample}.
+#'
 load_data_for_modelling <- function(){
     ###########################
     ## Defensive Programming ##
