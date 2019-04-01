@@ -455,11 +455,28 @@ load_data_for_modelling <- function(){
         envir = .GlobalEnv)
 
 
+    ###########
+    ## Setup ##
+    ###########
+    ## Look for a global variable which defines each split size
+    if(!exists("n_observations")){
+        n_observations <- Inf
+        warning("Could not find n_observations in the global environment.\nUsing default value: n_observations = ", n_observations)
+    }
+    ## Look for a global variable which defines the number of splits
+    if(!exists("n_splits")){
+        n_splits <- 8
+        warning("Could not find n_splits in the global environment.\nUsing default value: n_splits = ", n_splits)
+    }
+
+
     ##################
     ## Get the Data ##
     ##################
     ## Import the data
     dataset <- get(dataset_name)
+
+
     ########################
     ## Data Preprocessing ##
     ########################
@@ -469,20 +486,26 @@ load_data_for_modelling <- function(){
     ## a unique ID. Named it in accordance with dataset_key_column.
     dataset <- dataset %>% tibble::rownames_to_column(var = dataset_key_column)
     rownames(dataset) <- NULL
+    ## Slice the data. This is most useful when the purpose is to check whether
+    ## a model works rather than making predictions for further analysis. This
+    ## feature, if applicable, downsamples the data to allow faster
+    ## computations.
+    dataset <- dataset %>% dplyr::top_n(n_observations, dataset_key_column)
 
 
     ####################
     ## Split the Data ##
     ####################
-    ## Option 1: Split the data to 70%/30% Training/Test sets
-    # set.seed(902)
-    # rset_obj <- rsample::initial_split(dataset, prop = 0.7)
-    ## Option 2: K-fold cross validation
     set.seed(902)
-    rset_obj <- rsample::vfold_cv(dataset, v = 5)
-    ## Option 3: Bootstrap Sampling
-    # set.seed(902)
-    # rset_obj <- rsample::bootstraps(dataset, times = 20)
+    if(n_splits == 0){
+        ## Option 1: Split the data to 70%/30% Training/Test sets
+        rset_obj <- rsample::initial_split(dataset, prop = 0.7)
+    } else {
+        ## Option 2: K-fold cross validation
+        rset_obj <- rsample::vfold_cv(dataset, v = n_splits)
+        ## Option 3: Bootstrap Sampling
+        # rset_obj <- rsample::bootstraps(dataset, times = n_splits)
+    }
 
 
     ############
@@ -623,53 +646,14 @@ rmonic::setup()
 rmonic::list_to_env(yaml::read_yaml(file.path(k_path_scripts, "backtesting.yml")))
 
 
-################
-## Load Model ##
-################
-## Load model_init, model_fit, model_store, model_end located in model folder
-rmonic::load_model_components(model_name, k_path_models)
-
-
-#############################
-## Load Data for Modelling ##
-#############################
-## Extract the data source details into global environment
-model_config <- rmonic::load_model_config(model_name, k_path_models)
-rmonic::list_to_env(model_config[["data_source"]], smart_parsing = TRUE)
-## Get the data
-rset_obj <- load_data_for_modelling()
-
-
-###############
-## Run Model ##
-###############
-## Find out how many splits the rsample object contains
-K <- rmonic::get_rsample_num_of_splits(rset_obj)
-
-## Prepare everything our model needs
-model_init(model_name)
-
-## Loop over the dataset splits
-for(k in 1:K) {
-    ## Update global variables
-    do.call(function(k) split_num <<- k, list(k = k), envir = .GlobalEnv)
-
-    ## Extract the current training set and test set from the rsample object
-    training_set <- rmonic::get_rsample_training_set(rset_obj, k)
-    test_set <- rmonic::get_rsample_test_set(rset_obj, k)
-
-    ## Fit model(s) to the training set
-    model_fit(training_set)
-
-    ## Predict the test set
-    model_predict(test_set)
-
-    ## Store the results for further analysis
-    model_store()
-}# foreach-loop
-
-## Post-modelling operations
-model_end()
+######################################
+## Fetch the Correct Model Launcher ##
+######################################
+if(allow_parallel){
+    source(file.path(k_path_scripts, "backtesting-parallel.R"))
+} else {
+    source(file.path(k_path_scripts, "backtesting-sequential.R"))
+}
 ```
 
 ---

@@ -1,3 +1,5 @@
+#' @title Fit One or More Models to a Training Set
+#' @param training_set (`data.frame`) A table where samples are in rows and features are in columns.
 model_fit <- function(training_set)
 {
     ###########################

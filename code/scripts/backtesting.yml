@@ -1,10 +1,9 @@
 ## Define the model's name (must be identical to the model folder's name)
-model_name: cmtcars-example
+model_name: mtcars-example
 ## Sampling technique levers
 ### Define the number of splits
-n_splits: 8
+n_splits: 0 # insert 0 for 0-fold CV
 ### Define the number of observations in each split
-n_observations: Inf # insert `Inf` if it doesn't matter
+n_observations: 100 # insert `Inf` if it doesn't matter
 ## Should a parallel back-end be loaded and available?
-allow_parallel: yes
-
+allow_parallel: no

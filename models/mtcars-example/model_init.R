@@ -1,3 +1,5 @@
+#' @title Prepare everything the prediction model needs
+#' @param model_name The model name (must be identical to the model folder name).
 model_init <- function(model_name){
     ###########################
     ## Defensive Programming ##

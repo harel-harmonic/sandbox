@@ -1,3 +1,5 @@
+#' @title Predict a Test Set Using Archived Models
+#' @param test_set (`data.frame`) A table where samples are in rows and features are in columns.
 model_predict <- function(test_set)
 {
     ###########################

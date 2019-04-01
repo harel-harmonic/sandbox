@@ -1,3 +1,4 @@
+# Optional: Execute code after completion of backtesting
 model_end <- function(){
     ###########################
     ## Defensive Programming ##
