@@ -1,0 +1,51 @@
+project_metadata:
+  project_uid: 6kptw5A2cm2Q1KAstDsv
+  project_creation_date: 2019-04-02 02:18:07
+  project_name: sandbox
+project_paths:
+  - k_path_project <<- tryCatch(rprojroot::find_rstudio_root_file(),error=function(e)getwd())
+  - k_path_code <<- file.path(k_path_project, "code")
+  - k_path_data <<- file.path(k_path_project, "data")
+  - k_path_docs <<- file.path(k_path_project, "docs")
+  - k_path_models <<- file.path(k_path_project, "models")
+  - k_path_functions <<- file.path(k_path_code, "R")
+  - k_path_tests <<- file.path(k_path_code, "tests")
+  - k_path_scripts <<- file.path(k_path_code, "scripts")
+  - k_path_cache <<- file.path(k_path_data, "cache")
+  - k_path_submissions <<- file.path(k_path_data, "submissions")
+packages_management:
+  activated: no
+  agent: c("checkpoint", "pacman")[1]
+  snapshot_date: '2019-04-02'
+packages:
+  - library(rmonic) # {rmonic} customised
+  - library(archivist) # {rmonic} imports
+  - library(assertive) # {rmonic} imports
+  - library(digest) # {rmonic} imports
+  - library(dplyr) # {rmonic} imports
+  - library(fs) # {rmonic} imports
+  - library(magrittr) # {rmonic} imports
+  - library(purrr) # {rmonic} imports
+  - library(remotes) # {rmonic} imports
+  - library(rsample) # {rmonic} imports
+  - library(stringr) # {rmonic} imports
+  - library(tibble) # {rmonic} imports
+  - library(tidyr) # {rmonic} imports
+  - library(whisker) # {rmonic} imports
+  - library(xts) # {rmonic} imports
+  - library(yaml) # {rmonic} imports
+  - library(conflicted) # {rmonic} suggests
+  - library(doParallel) # {rmonic} suggests
+  - library(foreach) # {rmonic} suggests
+  - library(kableExtra) # {rmonic} suggests
+  - library(knitr) # {rmonic} suggests
+  - library(rmarkdown) # {rmonic} suggests
+  - library(testthat) # {rmonic} suggests
+  - library(tidyverse) # {rmonic} suggests
+  - library(googlesheets)
+packages_conflicts:
+  - conflict_prefer("setup", "rmonic")
+  - conflict_prefer("filter", "dplyr")
+  - conflict_prefer("union", "dplyr")
+  - conflict_prefer("setdiff", "dplyr")
+  - conflict_prefer("intersect", "dplyr")
