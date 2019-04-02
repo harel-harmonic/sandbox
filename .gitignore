@@ -68,3 +68,4 @@ data/submissions/
 !.Rprofile
 !*.Rproj
 !config.yml
+.Rproj.user
