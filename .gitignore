@@ -69,3 +69,4 @@ data/submissions/
 !*.Rproj
 !config.yml
 .Rproj.user
+*.gsheet
