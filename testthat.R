@@ -26,23 +26,20 @@ load_functions(path_functions)
 ################
 ## Unit Tests ##
 ################
-local({
-    message(rep("#",40), "\n## Running Unit Tests\n", rep("#",40))
-    test_dir(file.path(path_project, "tests", "testthat"))
-})
+message(rep("#",40), "\n## Running Unit Tests\n", rep("#",40))
+test_dir(file.path(path_project, "tests", "testthat"))
+first_name <<- "I shouldn't be here"
 
 
 #######################
 ## Integration Tests ##
 #######################
-local({
-    message(rep("#",40), "\n## Running Integration Tests\n", rep("#",40))
-    test_dir(file.path(path_project, "tests", "integration-tests"))
-})
+# message(rep("#",40), "\n## Running Integration Tests\n", rep("#",40))
+# test_dir(file.path(path_project, "tests", "integration-tests"))
 
 
 #############
 ## Cleanup ##
 #############
-suppressWarnings(rm(path_project, path_functions, path_temp))
 unlink(path_temp, recursive = TRUE, force = TRUE)
+suppressWarnings(rm(path_project, path_functions, path_temp))
