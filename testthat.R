@@ -32,12 +32,12 @@ local({
 })
 
 
-#####################
-## Component Tests ##
-#####################
+#######################
+## Integration Tests ##
+#######################
 local({
-    message(rep("#",40), "\n## Running Component Tests\n", rep("#",40))
-    test_dir(file.path(path_project, "tests", "component-tests"))
+    message(rep("#",40), "\n## Running Integration Tests\n", rep("#",40))
+    test_dir(file.path(path_project, "tests", "integration-tests"))
 })
 
 

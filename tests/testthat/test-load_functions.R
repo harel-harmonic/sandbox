@@ -36,7 +36,8 @@ test_that("load_functions works given a folder with invalid functions", {
 ##########
 test_that("load_functions works given a folder with valid functions", {
     # Create a temporary folder
-    folder_path <- proj_path("temp", "code", "R")
+    path_project <- rprojroot::find_rstudio_root_file()
+    folder_path <- file.path(path_project ,"temp", "code", "R")
     unlink(folder_path, recursive = TRUE)
     dir.create(folder_path, showWarnings = FALSE, recursive = TRUE)
     
@@ -77,7 +78,8 @@ test_that("load_functions works given a folder with valid functions", {
 ##########
 test_that("load_functions works given a folder without files (empty folder)", {
     # Create a temporary folder
-    folder_path <- file.path(tempdir(check = TRUE), "R")
+    path_project <- rprojroot::find_rstudio_root_file()
+    folder_path <- file.path(path_project ,"temp", "code", "R")
     dir.create(folder_path, showWarnings = FALSE, recursive = TRUE)
     
     # Execute function on an empty folder
