@@ -1,8 +1,14 @@
 # https://ropenscilabs.github.io/r-docker-tutorial/
+
+# Helper Functions --------------------------------------------------------
+system <- function(command, ...){message(command); base::system(command, ...)}
+`%+%` <- function(a,b) paste0(a,b)
+
 # Setup -------------------------------------------------------------------
 docker_dir <- tempfile("docker-")
 fs::dir_create(docker_dir)
-fs::file_create(docker_dir, "demo.text")
+Rprofile <- ".First <- function(){print('hello-world')}"
+writeLines(Rprofile, file.path(docker_dir, ".Rprofile"))
 shell.exec(docker_dir)
 
 # Launching Docker --------------------------------------------------------
@@ -19,16 +25,18 @@ system("docker pull rocker/verse")
 local_volume <- fs::path_tidy(docker_dir)
 container_volume <- "/home/rstudio"
 port <- "8787"
-command <- paste0("docker run -e PASSWORD=1234 --rm",
-                  " -p ", port, ":", port, 
-                  " -v ", local_volume, ":", container_volume,
-                  " rocker/verse")
+command <- 
+    "docker run -e PASSWORD=1234 --rm" %+%
+    " -p " %+% port %+% ":" %+% port %+%  
+    " -v " %+% local_volume %+% ":" %+% container_volume %+% 
+    " rocker/verse"
 message(command)
 system(command, wait = FALSE)
 browseURL(paste0("http://localhost:", port))
 message("| Username: rstudio | Password: 1234 |")
 
 # Teardown ----------------------------------------------------------------
-# Kill the latest containers
-CONTAINER_ID <- system("docker ps -q --latest", intern = TRUE)
-system(paste("docker container kill", CONTAINER_ID, collapse = " "))
+# Kill all containers
+CONTAINER_IDS <- base::system("docker ps -q", intern = TRUE)
+command <- "docker container kill " %+% paste(CONTAINER_IDS, collapse = " ")
+system(command)
