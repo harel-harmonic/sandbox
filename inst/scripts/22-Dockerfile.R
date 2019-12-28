@@ -5,24 +5,24 @@ system <- function(command, ...){message(command); base::system(command, ...)}
 `%+%` <- function(a,b) paste0(a,b)
 
 # Setup -------------------------------------------------------------------
-# system(docker system prune -a --volumes) # WARNING: DELETE ALL IMAGES
+# system("docker system prune -a --volumes") # WARNING: DELETE ALL IMAGES
 docker_dir <- tempfile("docker-")
 fs::dir_create(docker_dir)
-docker_image <- "tidylab/mlflow:3.6.0"
+IMAGE_NAME <- "tidylab/tidyflow:3.6.2"
 
 # Launching Docker --------------------------------------------------------
 # 1. Build Docker File
 dockerfile_path <- file.path(getwd(), "inst", "scripts")
-command <- 'docker build --tag="' %+% docker_image %+% '"' %+% ' "' %+% dockerfile_path %+% '"'
+command <- 'docker build --tag="' %+% IMAGE_NAME %+% '"' %+% ' "' %+% dockerfile_path %+% '"'
 system(command, wait = !FALSE)
 
 # 2. Show information
-command <- "docker history " %+% docker_image
+command <- "docker history " %+% IMAGE_NAME
 system(command, wait = !FALSE)
 command <- "docker images"
 system(command, wait = !FALSE)
 
-# 1. Run RStudio Server
+# 3. Run RStudio Server
 local_volume <- fs::path_tidy(docker_dir)
 container_volume <- "/home/rstudio"
 port <- "8787"
@@ -30,35 +30,24 @@ command <-
     "docker run -e PASSWORD=1234 --rm" %+%
     " -p " %+% port %+% ":" %+% port %+%  
     " -v " %+% local_volume %+% ":" %+% container_volume %+% 
-    " " %+% docker_image
+    " " %+% IMAGE_NAME
 system(command, wait = FALSE)
 browseURL(paste0("http://localhost:", port))
 system("docker version")
 message("| Username: rstudio | Password: 1234 |")
 CONTAINER_ID <- base::system("docker ps -q --latest", intern = TRUE)
 
-# 2. Install Anconda
-# install.packages("reticulate")
-# reticulate::install_miniconda()
-
-# 3. Install MLflow
-# utils::install.packages('mlflow', dependencies = TRUE)
-# mlflow::install_mlflow(python_version = "3.7")
-
 # 4. Using MLflow
 # https://github.com/mlflow/mlflow/tree/master/mlflow/R/mlflow
 # mlflow::mlflow_set_experiment("Test")
 # mlflow::mlflow_ui()
 
-# 5. Save the version of the image
-COMMIT_MESSAGE <- '\"' %+% "installed mlflow" %+% '\"'
-IMAGE_NAME <- "tidylab/mlflow"
-command <- "docker commit -m " %+% COMMIT_MESSAGE %+% " " %+% CONTAINER_ID %+% " " %+% IMAGE_NAME
-system(command, wait = !FALSE) 
-system("docker images") 
-
 # Teardown ----------------------------------------------------------------
 # Kill all containers
 CONTAINER_IDS <- base::system("docker ps -q", intern = TRUE)
 command <- "docker container kill " %+% paste(CONTAINER_IDS, collapse = " ")
+system(command)
+
+# Push Image
+command <- "docker push " %+% IMAGE_NAME
 system(command)
