@@ -5,6 +5,8 @@ system <- function(command, ...){message(command); base::system(command, ...)}
 `%+%` <- function(a,b) paste0(a,b)
 
 # Setup -------------------------------------------------------------------
+docker_dir <- tempfile("docker-")
+fs::dir_create(docker_dir)
 docker_image <- "rocker/verse"
 system("docker pull " %+% docker_image, wait = FALSE)
 
